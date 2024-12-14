@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InternLink", "InternLink\InternLink\InternLink.csproj", "{03D2316C-33EF-4C84-A45E-DE6F64D5548C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InternLink.Client", "InternLink\InternLink.Client\InternLink.Client.csproj", "{AF156684-33F9-4C29-BA5C-CFECF2BF8CBE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{03D2316C-33EF-4C84-A45E-DE6F64D5548C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03D2316C-33EF-4C84-A45E-DE6F64D5548C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03D2316C-33EF-4C84-A45E-DE6F64D5548C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03D2316C-33EF-4C84-A45E-DE6F64D5548C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF156684-33F9-4C29-BA5C-CFECF2BF8CBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF156684-33F9-4C29-BA5C-CFECF2BF8CBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF156684-33F9-4C29-BA5C-CFECF2BF8CBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF156684-33F9-4C29-BA5C-CFECF2BF8CBE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
