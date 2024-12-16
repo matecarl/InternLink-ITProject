@@ -1,0 +1,82 @@
+@using Microsoft.AspNetCore.Identity
+@using InternLink.Data
+
+@inject SignInManager<ApplicationUser> SignInManager
+
+<div class="navbar bg-neutral text-neutral-content">
+    <ul class="menu menu-horizontal px-1">
+        
+        <li>
+            <NavLink href="/">Home</NavLink>
+        </li>
+        <li>
+            <NavLink href="/About">About</NavLink>
+        </li>
+        <div class="dropdown">
+            <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"> 
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 6h16M4 12h16M4 18h7"/>
+                </svg>
+            </div>
+            <ul tabindex="0"
+                class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
+                <!--
+                @if (hasLoggedIn)
+                {
+                    <li>
+                        <NavLink href="/StudentProfile">Profile</NavLink>
+                    </li> -->
+                    <li>
+                        <NavLink>Settings</NavLink>
+                    </li>
+                    <li>
+                        <NavLink>My application</NavLink>
+                    </li>
+                    <!--<li>
+                        <NavLink href="/Account/Lockout">Logout</NavLink>
+                    </li>
+                }
+                else
+                {
+                    <li>
+                        <NavLink href="/Account/Login">Login</NavLink>
+                    </li>
+                    <li>
+                        <NavLink href="/Account/Register">Register</NavLink>
+                    </li>
+                }
+            -->
+            </ul>
+        </div>
+    </ul>
+</div>
+
+<!--
+<ul class="nav nav-pills flex-column">
+    <li class="nav-item">
+        <NavLink class="nav-link" href="/">Home</NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="/About">About</NavLink>
+    </li>
+</ul>
+-->
+<!--
+@code {
+    private bool hasLoggedIn;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hasLoggedIn = (await SignInManager.SignInAsync()).Any();
+    }
+}
+-->
