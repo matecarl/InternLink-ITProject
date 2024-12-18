@@ -1,0 +1,124 @@
+﻿@page "/internships/edit"
+@using Microsoft.EntityFrameworkCore
+@using Models
+@inject IDbContextFactory<Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Internship</h2>
+<hr />
+@if (Internship is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Internship" OnValidSubmit="UpdateInternship" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="Internship.Id" value="@Internship.Id" />
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title:</label>
+                    <InputText id="title" @bind-Value="Internship.Title" class="form-control" />
+                    <ValidationMessage For="() => Internship.Title" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description:</label>
+                    <InputText id="description" @bind-Value="Internship.Description" class="form-control" />
+                    <ValidationMessage For="() => Internship.Description" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="location" class="form-label">Location:</label>
+                    <InputText id="location" @bind-Value="Internship.Location" class="form-control" />
+                    <ValidationMessage For="() => Internship.Location" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="remotelevel" class="form-label">RemoteLevel:</label>
+                    @* <InputText id="remotelevel" @bind-Value="Internship.RemoteLevel" class="form-control" /> *@
+                    <ValidationMessage For="() => Internship.RemoteLevel" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="postedat" class="form-label">PostedAt:</label>
+                    <InputDate id="postedat" @bind-Value="Internship.PostedAt" class="form-control" />
+                    <ValidationMessage For="() => Internship.PostedAt" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="updatedat" class="form-label">UpdatedAt:</label>
+                    <InputDate id="updatedat" @bind-Value="Internship.UpdatedAt" class="form-control" />
+                    <ValidationMessage For="() => Internship.UpdatedAt" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="userid" class="form-label">UserId:</label>
+                    <InputNumber id="userid" @bind-Value="Internship.UserId" class="form-control" />
+                    <ValidationMessage For="() => Internship.UserId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="minduration" class="form-label">MinDuration:</label>
+                    <InputNumber id="minduration" @bind-Value="Internship.MinDuration" class="form-control" />
+                    <ValidationMessage For="() => Internship.MinDuration" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/internships">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private Internship? Internship { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Internship ??= await context.Internships.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (Internship is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateInternship()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(Internship!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!InternshipExists(Internship!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/internships");
+    }
+
+    private bool InternshipExists(int id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Internships.Any(e => e.Id == id);
+    }
+}

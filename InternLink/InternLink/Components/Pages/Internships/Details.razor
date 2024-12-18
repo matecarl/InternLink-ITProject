@@ -1,0 +1,60 @@
+﻿@page "/internships/details"
+@using Microsoft.EntityFrameworkCore
+@using Models
+@inject IDbContextFactory<Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>Internship</h2>
+    <hr />
+    @if (internship is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Title</dt>
+            <dd class="col-sm-10">@internship.Title</dd>
+            <dt class="col-sm-2">Description</dt>
+            <dd class="col-sm-10">@internship.Description</dd>
+            <dt class="col-sm-2">Location</dt>
+            <dd class="col-sm-10">@internship.Location</dd>
+            <dt class="col-sm-2">RemoteLevel</dt>
+            <dd class="col-sm-10">@internship.RemoteLevel</dd>
+            <dt class="col-sm-2">PostedAt</dt>
+            <dd class="col-sm-10">@internship.PostedAt</dd>
+            <dt class="col-sm-2">UpdatedAt</dt>
+            <dd class="col-sm-10">@internship.UpdatedAt</dd>
+            <dt class="col-sm-2">UserId</dt>
+            <dd class="col-sm-10">@internship.UserId</dd>
+            <dt class="col-sm-2">MinDuration</dt>
+            <dd class="col-sm-10">@internship.MinDuration</dd>
+        </dl>
+        <div>
+            <a href="@($"/internships/edit?id={internship.Id}")">Edit</a> |
+            <a href="@($"/internships")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private Internship? internship;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        internship = await context.Internships.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (internship is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}
