@@ -15,6 +15,7 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 @inject RoleManager<IdentityRole> RoleManager
+@inject ApplicationDbContext AppDbContext
  
 
 <PageTitle>Register</PageTitle>
@@ -77,14 +78,32 @@
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
         var emailStore = GetEmailStore();
         await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-        var result = await UserManager.CreateAsync(user, Input.Password);
 
-        var addUserRoleResult = await UserManager.AddToRoleAsync(user, Input.Role);
-        
-        if (!result.Succeeded || !addUserRoleResult.Succeeded)
+        await using (var transaction = AppDbContext.Database.BeginTransaction())
         {
-            identityErrors = result.Errors;
-            return;
+            var result = await UserManager.CreateAsync(user, Input.Password);
+            if (!result.Succeeded)
+            {
+                identityErrors = result.Errors;
+                return;
+            }
+            
+            var roleExists = await RoleManager.RoleExistsAsync(Input.Role);
+            if (!roleExists)
+            {
+                identityErrors = new[] { new IdentityError { Description = "Invalid role" } };
+                return;
+            }
+            
+            var addUserRoleResult = await UserManager.AddToRoleAsync(user, Input.Role);
+            if (!addUserRoleResult.Succeeded)
+            {
+                identityErrors = addUserRoleResult.Errors;
+                return;
+            }
+            
+            await transaction.CommitAsync();
+            
         }
 
         Logger.LogInformation("User created a new account with password.");
