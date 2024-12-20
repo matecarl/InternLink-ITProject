@@ -1,0 +1,50 @@
+﻿@page "/internships"
+@attribute [Authorize(Roles = "Company")]
+
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.AspNetCore.Authorization
+@using InternLink.Interfaces
+@using Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject IInternshipRepository Repository
+
+
+<PageTitle>Index</PageTitle>
+
+<h1>My internships</h1>
+
+<p>
+    <a href="internships/create" class="btn">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="context.Internships">
+    <PropertyColumn Property="internship => internship.Title" />
+    <PropertyColumn Property="internship => internship.Description" />
+    <PropertyColumn Property="internship => internship.Location" />
+    <PropertyColumn Property="internship => internship.RemoteLevel" />
+    <PropertyColumn Property="internship => internship.PostedAt" />
+    <PropertyColumn Property="internship => internship.UpdatedAt" />
+    <PropertyColumn Property="internship => internship.UserId" />
+    <PropertyColumn Property="internship => internship.MinDuration" />
+    
+    <TemplateColumn Context="internship">
+        <a href="@($"internships/edit?id={internship.Id}")">Edit</a> |
+        <a href="@($"internships/details?id={internship.Id}")">Details</a> |
+        <a href="@($"internships/delete?id={internship.Id}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    
+    
+    private ApplicationDbContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}
