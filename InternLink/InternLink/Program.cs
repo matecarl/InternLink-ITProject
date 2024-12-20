@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using InternLink.Components;
 using InternLink.Components.Account;
 using InternLink.Data;
+using InternLink.Interfaces;
+using InternLink.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +47,8 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
+builder.Services.AddScoped<IInternshipRepository, InternshipRepository>();
 
 var app = builder.Build();
 
