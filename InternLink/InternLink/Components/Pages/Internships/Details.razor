@@ -1,42 +1,99 @@
 ﻿@page "/internships/details"
-@using Microsoft.EntityFrameworkCore
+@using InternLink.Data
+@using InternLink.Interfaces
+@using Microsoft.AspNetCore.Identity
 @using Models
-@inject IDbContextFactory<Data.ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject IInternshipRepository Repository
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor HttpContextAccessor
+
+@attribute [StreamRendering]
 
 <PageTitle>Details</PageTitle>
 
-<h1>Details</h1>
 
-<div>
-    <h2>Internship</h2>
-    <hr />
+<div class="container mx-auto py-10 px-4 lg:px-20">
     @if (internship is null)
     {
-        <p><em>Loading...</em></p>
+        <p>
+            <em>Loading...</em>
+        </p>
     }
-    else {
-        <dl class="row">
-            <dt class="col-sm-2">Title</dt>
-            <dd class="col-sm-10">@internship.Title</dd>
-            <dt class="col-sm-2">Description</dt>
-            <dd class="col-sm-10">@internship.Description</dd>
-            <dt class="col-sm-2">Location</dt>
-            <dd class="col-sm-10">@internship.Location</dd>
-            <dt class="col-sm-2">RemoteLevel</dt>
-            <dd class="col-sm-10">@internship.RemoteLevel</dd>
-            <dt class="col-sm-2">PostedAt</dt>
-            <dd class="col-sm-10">@internship.PostedAt</dd>
-            <dt class="col-sm-2">UpdatedAt</dt>
-            <dd class="col-sm-10">@internship.UpdatedAt</dd>
-            <dt class="col-sm-2">UserId</dt>
-            <dd class="col-sm-10">@internship.UserId</dd>
-            <dt class="col-sm-2">MinDuration</dt>
-            <dd class="col-sm-10">@internship.MinDuration</dd>
-        </dl>
-        <div>
-            <a href="@($"/internships/edit?id={internship.Id}")">Edit</a> |
-            <a href="@($"/internships")">Back to List</a>
+    else
+    {
+
+        <!-- Internship Title and Dates -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold">@internship.Title</h1>
+            <div class="text-right">
+                <p class="text-gray-500 text-sm">
+                    <strong>Posted:</strong> @internship.PostedAt.ToString("dd MMM yyyy")
+                </p>
+                @if (internship.UpdatedAt > internship.PostedAt)
+                {
+                    <p class="text-gray-500 text-sm">
+                        <strong>Last Updated:</strong> @internship.UpdatedAt.ToString("dd MMM yyyy")
+                    </p>
+                }
+            </div>
+        </div>
+
+        <!-- Internship Location and Duration -->
+        <div class="flex items-center space-x-6 mb-8">
+            <p class="text-gray-600 flex items-center space-x-2">
+                <i class="fas fa-map-marker-alt text-gray-500"></i>
+                <span>@internship.Location</span>
+            </p>
+            <p class="text-gray-600 flex items-center space-x-2">
+                <i class="fas fa-clock text-gray-500"></i>
+                <span>Minimum @internship.MinDuration months</span>
+            </p>
+            <p class="text-gray-600 flex items-center space-x-2">
+                <i class="fas fa-laptop-house text-gray-500"></i>
+                <span>@internship.RemoteLevel</span>
+            </p>
+        </div>
+
+        <!-- Skills Section -->
+        @* <div class="mb-8"> *@
+        @*     <h2 class="text-xl font-semibold mb-4">Skills Required</h2> *@
+        @*     <div class="flex flex-wrap gap-3"> *@
+        @*         <span class="badge badge-outline badge-md">Communication</span> *@
+        @*         <span class="badge badge-outline badge-md">Problem Solving</span> *@
+        @*         <span class="badge badge-outline badge-md">Teamwork</span> *@
+        @*         <span class="badge badge-outline badge-md">Creativity</span> *@
+        @*     </div> *@
+        @* </div> *@
+
+        <!-- Description Section -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Internship Description</h2>
+            <p class="text-gray-700 leading-relaxed">
+                @internship.Description
+            </p>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="flex justify-between items-center">
+            <button
+                onclick="window.history.back()"
+                class="btn">
+                Go to list
+            </button>
+            <div class="space-x-3">
+                @if (internship.UserId != UserManager.GetUserId(HttpContextAccessor.HttpContext.User))
+                {
+                    <button class="btn  btn-primary">Apply Now</button>
+                }
+                else
+                {
+                    <NavLink href="@($"internships/edit?id={internship.Id}")" class="btn btn btn-neutral">
+                        <i class="fas fa-edit"></i>
+                        Edit
+                    </NavLink>
+                }
+            </div>    
         </div>
     }
 </div>
@@ -46,11 +103,10 @@
 
     [SupplyParameterFromQuery]
     private int Id { get; set; }
-
+    
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        internship = await context.Internships.FirstOrDefaultAsync(m => m.Id == Id);
+        internship = await Repository.GetByIdAsync(Id);
 
         if (internship is null)
         {
