@@ -1,0 +1,93 @@
+﻿@page "/internships"
+@attribute [Authorize(Roles = "Company")]
+
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Authorization
+@using InternLink.Interfaces
+@using InternLink.Models
+@using Microsoft.AspNetCore.Identity
+@using Data
+
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject UserManager<ApplicationUser> UserManager
+@inject IInternshipRepository Repository
+@inject IHttpContextAccessor HttpContextAccessor
+
+@attribute [StreamRendering]
+
+
+<PageTitle>My internships</PageTitle>
+
+<div class="container mx-auto py-10 px-4 lg:px-20">
+    <!-- Page Title -->
+    <h1 class="text-2xl font-bold mb-6">Manage Your Internships (@UserInternships?.Count)</h1>
+
+    <NavLink href="/internships/create" class="btn btn-primary mb-8">
+        Post a new Internship
+    </NavLink>
+    
+    <!-- Internship Cards -->
+    <div class="space-y-6">
+
+        @if (UserInternships is null)
+        {
+            <p>
+                <em>Loading...</em>
+            </p>
+        }
+        else
+        {
+            @foreach (var internship in UserInternships)
+            {
+                <!-- Card 1 -->
+                <div class="card bg-base-100 shadow-md p-6 border">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">
+                            <NavLink href="@($"internships/details?id={internship.Id}")">
+                                @internship.Title
+                            </NavLink>
+                        </h2>
+                        <p class="text-gray-500 text-sm">Posted: @internship.PostedAt.ToString("dd MMM yyyy")</p>
+                    </div>
+                    <div class="flex items-center space-x-4 mb-4">
+                        <p class="text-gray-600 flex items-center space-x-2">
+                            <i class="fas fa-map-marker-alt text-gray-500"></i>
+                            <span>@internship.Location</span>
+                        </p>
+                        <p class="text-gray-600 flex items-center space-x-2">
+                            <i class="fas fa-clock text-gray-500"></i>
+                            <span>Minimum @internship.MinDuration months</span>
+                        </p>
+                        <p class="text-gray-600 flex items-center space-x-2">
+                            <i class="fas fa-laptop-house text-gray-500"></i>
+                            <span>@internship.RemoteLevel</span>
+                        </p>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <!-- Action Buttons -->
+                        <div class="space-x-3">
+                            <NavLink href="@($"internships/edit?id={internship.Id}")" class="btn btn-neutral btn-sm">
+                                <i class="fas fa-edit"></i>
+                                Edit
+                            </NavLink>
+                        </div>
+                        <!-- Skills -->
+                        @* <div class="flex flex-wrap gap-2"> *@
+                        @*     <span class="badge badge-outline badge-sm">Communication</span> *@
+                        @*     <span class="badge badge-outline badge-sm">Teamwork</span> *@
+                        @* </div> *@
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    private List<Internship>? UserInternships;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        UserInternships = await Repository.GetAllByUserIdAsync(UserManager.GetUserId(HttpContextAccessor.HttpContext.User));
+    }
+}

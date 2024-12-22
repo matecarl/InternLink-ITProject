@@ -1,0 +1,142 @@
+﻿@page "/internships/edit"
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Company")]
+
+@using InternLink.Data
+@using InternLink.Enums
+@using InternLink.Interfaces
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using Models
+@using Microsoft.AspNetCore.Http
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+@inject IInternshipRepository Repository
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor HttpContextAccessor
+
+
+<PageTitle>Edit an Internship</PageTitle>
+
+@if (Internship is null)
+{
+<p><em>Loading...</em></p>
+}
+else
+{
+<EditForm method="post" Model="Internship" OnValidSubmit="UpdateInternship" FormName="edit" Enhance>
+    <DataAnnotationsValidator />
+    <input type="hidden" name="Internship.Id" value="@Internship.Id" />
+
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg mx-auto">
+        <h2 class="text-2xl font-bold text-center mb-6">Post an Internship Listing</h2>
+
+        <!-- Title -->
+        <div class="form-control mb-4">
+            <label for="title" class="label">
+                <span class="label-text">Title</span>
+            </label>
+            <InputText id="title" @bind-Value="Internship.Title" class="input input-bordered w-full" />
+            <ValidationMessage For="() => Internship.Title" class="text-red-500 text-sm mt-1" />
+        </div>
+
+        <!-- Description -->
+        <div class="form-control mb-4">
+            <label for="description" class="label">
+                <span class="label-text">Description</span>
+            </label>
+            <InputTextArea id="description" @bind-Value="Internship.Description" class="textarea textarea-bordered w-full h-24" />
+            <ValidationMessage For="() => Internship.Description" class="text-red-500 text-sm mt-1" />
+        </div>
+
+        <!-- Location -->
+        <div class="form-control mb-4">
+            <label for="location" class="label">
+                <span class="label-text">Location</span>
+            </label>
+            <InputText id="location" @bind-Value="Internship.Location" class="input input-bordered w-full" />
+            <ValidationMessage For="() => Internship.Location" class="text-red-500 text-sm mt-1" />
+        </div>
+
+        <!-- Remote Level -->
+        <div class="form-control mb-4">
+            <label for="remoteLevel" class="label">
+                <span class="label-text">Remote Level</span>
+            </label>
+            <InputSelect id="remoteLevel" @bind-Value="Internship.RemoteLevel" class="select select-bordered w-full">
+                <option value="" disabled>Select remote level</option>
+                @foreach (var remoteLevel in Enum.GetValues(typeof(RemoteLevel)))
+                {
+                    <option value="@remoteLevel">@remoteLevel</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="() => Internship.RemoteLevel" class="text-red-500 text-sm mt-1" />
+        </div>
+
+        <!-- Minimum Duration -->
+        <div class="form-control mb-6">
+            <label for="minDuration" class="label">
+                <span class="label-text">Minimum Required Duration (months)</span>
+            </label>
+            <InputNumber id="minDuration" @bind-Value="Internship.MinDuration" class="input input-bordered w-full" />
+            <ValidationMessage For="() => Internship.MinDuration" class="text-red-500 text-sm mt-1" />
+        </div>
+
+        <div class="flex justify-between gap-4">
+            <!-- Return Button -->
+            <button 
+                href="/internships"
+                class="btn w-1/2"
+                onclick="window.history.back()">
+                Cancel
+            </button>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary w-1/2">
+                Save
+            </button>
+        </div>
+    </div>
+</EditForm>
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private Internship? Internship { get; set; } = new();
+
+    [Authorize(Roles = "Company")]
+    protected override async Task OnInitializedAsync()
+    {
+        Internship = await Repository.GetByIdAsync(Id);
+        if (Internship is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    [Authorize(Roles = "Company")]
+    private async Task UpdateInternship()
+    {
+        var _internship = await Repository.GetByIdAsync(Id);
+        
+        if (_internship == null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+        
+        if (_internship.UserId != UserManager.GetUserId(HttpContextAccessor.HttpContext.User))
+        {
+            NavigationManager.NavigateTo("unauthorized");
+        }
+
+        await Repository.UpdateAsync(Internship, Id);
+
+        NavigationManager.NavigateTo($"internships/details?id={_internship.Id}");
+    }
+}
+
+
