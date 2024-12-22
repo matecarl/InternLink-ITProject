@@ -7,8 +7,7 @@
 <nav class="navbar justify-between bg-base-300">
     <div>
         <NavLink class="btn btn-ghost text-lg" href="">
-            <img alt="Logo" src="" class="w-4"/>
-            InternLink
+            <img alt="Logo" src="Images/Logo.png" width="100px"/>
         </NavLink>
 
         <NavLink class="btn btn-ghost btn-sm">
@@ -51,13 +50,18 @@
 
                     <ul tabindex="0" class="dropdown-content menu z-[1] bg-base-200 p-6 rounded-box shadow w-56 gap-2">
                         <span>@context.User.Identity?.Name</span>
-                        <li>
-                            <NavLink>Profile</NavLink>
-                        </li>
+                        <AuthorizeView Roles="Student" Context="StudentContext">
+                            <li>
+                                <NavLink href="/StudentProfile">Profile</NavLink>
+                            </li>
+                        </AuthorizeView>
                         <li>
                             <NavLink href="Account/Manage">Settings</NavLink>
                         </li>
                         <AuthorizeView Roles="Company" Context="CompanyContext">
+                            <li>
+                                <NavLink href="/CompanyProfile">Profile</NavLink>
+                            </li>
                             <li>
                                 <NavLink href="Internships">My internships</NavLink>
                             </li>
