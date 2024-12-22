@@ -83,13 +83,14 @@ else
             <ValidationMessage For="() => Internship.MinDuration" class="text-red-500 text-sm mt-1" />
         </div>
 
-        @* <ValidationSummary class="text-red-500 mb-4" role="alert"/> *@
-
         <div class="flex justify-between gap-4">
             <!-- Return Button -->
-            <NavLink href="/internships" type="button" class="btn w-1/2">
-                Return
-            </NavLink>
+            <button 
+                href="/internships"
+                class="btn w-1/2"
+                onclick="window.history.back()">
+                Cancel
+            </button>
 
             <!-- Submit Button -->
             <button type="submit" class="btn btn-primary w-1/2">
@@ -134,8 +135,6 @@ else
 
         await Repository.UpdateAsync(Internship, Id);
 
-        Internship = await Repository.GetByIdAsync(Id);
-        
         NavigationManager.NavigateTo($"internships/details?id={_internship.Id}");
     }
 }
