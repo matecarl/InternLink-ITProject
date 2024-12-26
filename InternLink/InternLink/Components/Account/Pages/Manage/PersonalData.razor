@@ -1,11 +1,13 @@
 ﻿@page "/Account/Manage/PersonalData"
+@using Microsoft.AspNetCore.Components.Sections
 
 @inject IdentityUserAccessor UserAccessor
 
 <PageTitle>Personal Data</PageTitle>
 
 <StatusMessage/>
-<h3>Personal Data</h3>
+
+<SectionContent SectionName="Setting">Personal Data</SectionContent>
 
 <div class="row">
     <div class="col-md-6">
