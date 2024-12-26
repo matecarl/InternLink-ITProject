@@ -3,6 +3,7 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Identity
 @using InternLink.Data
+@using Microsoft.AspNetCore.Components.Sections
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
@@ -11,7 +12,8 @@
 
 <PageTitle>Two-factor authentication</PageTitle>
 
-<h1>Two-factor authentication</h1>
+<SectionContent SectionName="Title">Two-factor authentication</SectionContent>
+
 <hr/>
 <StatusMessage Message="@message"/>
 <p>Your login is protected with an authenticator app. Enter your authenticator code below.</p>
@@ -22,13 +24,13 @@
             <input type="hidden" name="RememberMe" value="@RememberMe"/>
             <DataAnnotationsValidator/>
             <ValidationSummary class="text-danger" role="alert"/>
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.TwoFactorCode" id="Input.TwoFactorCode" class="form-control" autocomplete="off"/>
-                <label for="Input.TwoFactorCode" class="form-label">Authenticator code</label>
+            <div class="mb-4">
+                <label for="Input.TwoFactorCode" class="block text-lg font-medium text-gray-700">Authenticator code</label>
+                <InputText @bind-Value="Input.TwoFactorCode" id="Input.TwoFactorCode" class="input input-bordered w-full mt-2 text-lg p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" autocomplete="off"/>
                 <ValidationMessage For="() => Input.TwoFactorCode" class="text-danger"/>
             </div>
             <div class="checkbox mb-3">
-                <label for="remember-machine" class="form-label">
+                <label for="remember-machine">
                     <InputCheckbox @bind-Value="Input.RememberMachine"/>
                     Remember this machine
                 </label>
