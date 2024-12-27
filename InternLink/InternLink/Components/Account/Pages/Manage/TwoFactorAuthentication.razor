@@ -3,13 +3,14 @@
 @using Microsoft.AspNetCore.Http.Features
 @using Microsoft.AspNetCore.Identity
 @using InternLink.Data
+@using Microsoft.AspNetCore.Components.Sections
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityUserAccessor UserAccessor
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Two-factor authentication (2FA)</PageTitle>
+<SectionContent SectionName="Setting">Two-factor authentication (2FA)</SectionContent>
 
 <StatusMessage/>
 <h3>Two-factor authentication (2FA)</h3>

@@ -1,17 +1,83 @@
-﻿@inherits LayoutComponentBase
-@layout InternLink.Components.Layout.MainLayout
+﻿@using Microsoft.AspNetCore.Components.Sections
+@using Microsoft.AspNetCore.Identity
+@using InternLink.Data
 
-<h1>Manage your account</h1>
+@inherits LayoutComponentBase
+@layout Layout.MainLayout
+@inject SignInManager<ApplicationUser> SignInManager
 
-<div>
-    <h2>Change your account settings</h2>
-    <hr/>
-    <div class="row">
-        <div class="col-lg-3">
-            <ManageNavMenu/>
+
+<div class="flex h-full min-h-screen bg-gray-100">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-200">
+        <div class="p-6">
+            <h2 class="text-xl font-bold text-gray-700">Settings</h2>
+            <nav class="mt-6">
+                <ul>
+                    <li>
+                        <NavLink href="Account/Profile" class="block py-2 px-4 rounded-lg hover:bg-gray-100 text-gray-700">
+                            <AuthorizeView Roles="Company">
+                                Company Profile
+                            </AuthorizeView>
+                            <AuthorizeView Roles="Student">
+                                Profile
+                            </AuthorizeView>
+                        </NavLink>
+                    </li>
+                    <li>
+                        <NavLink href="Account/Manage" class="block py-2 px-4 rounded-lg hover:bg-gray-100 text-gray-700">Account</NavLink>
+                    </li>
+                    @* <li> *@
+                    @*     <NavLink href="Account/Notifications" class="block py-2 px-4 rounded-lg hover:bg-gray-100 text-gray-700">Notifications</NavLink> *@
+                    @* </li> *@
+                    <AuthorizeView Roles="Company">
+                        <li>
+                            <NavLink href="Internships" class="block py-2 px-4 rounded-lg hover:bg-gray-100 text-gray-700">Manage Internships</NavLink>
+                        </li>
+                    </AuthorizeView>
+                    <li>
+                        <NavLink href="Account/Manage/Email" class="block py-2 px-4 rounded-lg hover:bg-gray-100 text-gray-700">Email</NavLink>
+                    </li>
+                    <li>
+                        <NavLink href="Account/Manage/ChangePassword" class="block py-2 px-4 rounded-lg hover:bg-gray-100 text-gray-700">Password</NavLink>
+                    </li>
+                    @if (hasExternalLogins)
+                    {
+                    <li>
+                        <NavLink href="Account/Manage/ExternalLogins" class="block py-2 px-4 rounded-lg hover:bg-gray-100 text-gray-700">External logins</NavLink>
+                    </li>
+                    }
+                    <li>
+                        <NavLink href="Account/Manage/TwoFactorAuthentication" class="block py-2 px-4 rounded-lg hover:bg-gray-100 text-gray-700">Two-factor authentication</NavLink>
+                    </li>
+                    <li>
+                        <NavLink href="Account/Manage/PersonalData" class="block py-2 px-4 rounded-lg hover:bg-gray-100 text-gray-700">Personal data</NavLink>
+                    </li>
+                </ul>
+            </nav>
         </div>
-        <div class="col-lg-9">
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6">
+        <header class="border-b border-gray-300 pb-4 mb-6">
+            <h1 class="text-2xl font-semibold text-gray-800">
+                <SectionOutlet SectionName="Setting" />
+            </h1>
+        </header>
+
+        <section>
             @Body
-        </div>
-    </div>
+        </section>
+    </main>
 </div>
+
+@code
+{
+    private bool hasExternalLogins;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+    }
+}

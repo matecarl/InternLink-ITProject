@@ -1,0 +1,15 @@
+@using Microsoft.AspNetCore.Components.Sections
+
+@inherits LayoutComponentBase
+@layout Layout.MainLayout
+
+<section class="py-16">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-gray-100 p-8 rounded-lg shadow-lg">
+            <h2 class="text-3xl font-extrabold text-gray-800 text-center mb-8">
+                <SectionOutlet SectionName="Title" />
+            </h2>
+            @Body
+        </div>
+    </div>
+</section>

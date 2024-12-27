@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
 @using InternLink.Data
+@using Microsoft.AspNetCore.Components.Sections
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IEmailSender<ApplicationUser> EmailSender
@@ -14,18 +15,22 @@
 
 <PageTitle>Resend email confirmation</PageTitle>
 
-<h1>Resend email confirmation</h1>
+<SectionContent SectionName="Title">Resend email confirmation</SectionContent>
+
 <h2>Enter your email.</h2>
 <hr/>
+
 <StatusMessage Message="@message"/>
 <div class="row">
     <div class="col-md-4">
         <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
             <DataAnnotationsValidator/>
             <ValidationSummary class="text-danger" role="alert"/>
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" aria-required="true" placeholder="name@example.com"/>
-                <label for="Input.Email" class="form-label">Email</label>
+
+            <div class="mb-4">
+                <label for="Input.Email" class="block text-lg font-medium text-gray-700">Email</label>
+                <InputText @bind-Value="Input.Email" type="email" id="Input.Email" required autocomplete="username" aria-required="true"
+                           class="input input-bordered w-full mt-2 text-lg p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your email"/>
                 <ValidationMessage For="() => Input.Email" class="text-danger"/>
             </div>
             <button type="submit" class="w-100 btn btn-lg btn-primary">Resend</button>
