@@ -21,11 +21,11 @@
             <DataAnnotationsValidator/>
             <ValidationSummary class="text-danger" role="alert"/>
             <div class="form-floating mb-3">
-                <label for="username" class="form-label">Username</label>
+                <label for="username" class="">Username</label>
                 <input type="text" value="@username" id="username" class="form-control" placeholder="Choose your username." disabled/>
             </div>
             <div class="form-floating mb-3">
-                <label for="Input.PhoneNumber" class="form-label">Phone number</label>
+                <label for="Input.PhoneNumber" class="">Phone number</label>
                 <InputText @bind-Value="Input.PhoneNumber" id="Input.PhoneNumber" class="form-control" placeholder="Enter your phone number"/>
                 <ValidationMessage For="() => Input.PhoneNumber" class="text-danger"/>
             </div>
