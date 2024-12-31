@@ -1,14 +1,29 @@
-@page "/StudentProfile"
+@rendermode InteractiveServer
+
+@page "/student-profile"
 @using System.Security.Claims
 @using InternLink.Data
 @using InternLink.Models
+@using InternLink.Services.Profiles
+@using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
-@inject ApplicationDbContext DbContext
+@inject NavigationManager NavigationManager
+@inject IProfileService ProfileService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject InternLink.Data.ApplicationDbContext DbContext
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor HttpContextAccessor
 
 <PageTitle>Student profile</PageTitle>
 
 <h3>StudentProfile</h3>
+
+@if (student == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
     <EditForm Model="@student" method="post" OnValidSubmit="HandleValidSubmit" FormName="studentProfileForm" Enhance>
         <DataAnnotationsValidator />
         <ValidationSummary />
@@ -23,13 +38,7 @@
                     <InputFile OnChange="HandleAvatarSelected" class="input input-bordered w-full max-w-xs"/>
                 </div>
             </div>
-            
-            <div class="label">
-                <span class="label-text">Username</span>
-            </div>
-            <InputText @bind-Value="student.UserName" placeholder="Enter your username" class="input input-bordered w-full max-w-xs"/>
-            <ValidationMessage For="() => student.UserName" class="text-red-500 text-sm mt-1" />
-            
+
             <div class="label">
                 <span class="label-text">First name</span>
             </div>
@@ -59,12 +68,13 @@
             </div>
             <InputFile OnChange="HandleFileSelected" class="input input-bordered w-full max-w-xs"/>
 
-            <button type="submit" class="btn btn-active btn-neutral">Change Profile</button>
+            <button type="submit" class="btn btn-active btn-neutral">${student.Id == 0 ? "Create a profile" : "Change profile"}</button>
         </div>
     </EditForm>
+}
 
 @code {
-    [SupplyParameterFromForm] private StudentProfile student { get; set; } = new();
+    private StudentProfile student;
 
     protected override async Task OnInitializedAsync()
     {
@@ -74,12 +84,11 @@
         if (user.Identity.IsAuthenticated)
         {
             var userId = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            var applicationUser = await DbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            student = await DbContext.StudentProfiles.FirstOrDefaultAsync(s => s.UserId == userId) ?? new StudentProfile { UserId = userId };
+            student = await ProfileService.GetStudentProfileAsync(userId) ?? new StudentProfile { UserId = userId };
 
-            if (applicationUser != null)
+            if (student.UserName == null)
             {
-                student.UserName = applicationUser.UserName;
+                student.UserName = user.Identity.Name;
             }
         }
     }
@@ -93,39 +102,30 @@
                           $"Study: {student.Study}, " +
                           $"Avatar: {student.ProfilePhotoUrl}, " +
                           $"ResumeUrl: {student.ResumeUrl}");
-        
+
         var existingStudent = await DbContext.StudentProfiles.FirstOrDefaultAsync(s => s.UserId == student.UserId);
-        if (existingStudent != null)
+        
+        if (existingStudent == null)
         {
-            existingStudent.UserName = student.UserName;
-            existingStudent.FirstName = student.FirstName;
-            existingStudent.LastName = student.LastName;
-            existingStudent.Description = student.Description;
-            existingStudent.Study = student.Study;
-            existingStudent.ResumeUrl = student.ResumeUrl;
-            existingStudent.ProfilePhotoUrl = student.ProfilePhotoUrl;
-            DbContext.StudentProfiles.Update(existingStudent);
+            // Create new profile
+            await DbContext.StudentProfiles.AddAsync(student);
+            await DbContext.SaveChangesAsync();
         }
         else
         {
-            student.UserName = student.UserName ?? String.Empty;
-            student.FirstName = student.FirstName ?? String.Empty;
-            student.LastName = student.LastName ?? String.Empty;
-            student.Description = student.Description ?? String.Empty;
-            student.Study = student.Study ?? String.Empty;
-            student.ResumeUrl = student.ResumeUrl ?? String.Empty;
-            student.ProfilePhotoUrl = student.ProfilePhotoUrl ?? String.Empty;
-            DbContext.StudentProfiles.Add(student);
+            // Update existing profile
+            DbContext.StudentProfiles.Update(student);
+            await DbContext.SaveChangesAsync();
+            return; 
         }
-
-        var applicationUser = await DbContext.Users.FirstOrDefaultAsync(u => u.Id == student.UserId);
-        if (applicationUser != null)
-        {
-            applicationUser.UserName = student.UserName;
-            DbContext.Users.Update(applicationUser);
-        }
-
-        await DbContext.SaveChangesAsync();
+        
+        existingStudent.UserName = student.UserName;
+        existingStudent.FirstName = student.FirstName;
+        existingStudent.LastName = student.LastName;
+        existingStudent.Description = student.Description;
+        existingStudent.Study = student.Study;
+        existingStudent.ResumeUrl = student.ResumeUrl;
+        existingStudent.ProfilePhotoUrl = student.ProfilePhotoUrl;
     }
 
     private void HandleFileSelected(InputFileChangeEventArgs e)
@@ -134,7 +134,7 @@
         var file = e.File;
         // Process the file and update student.ResumeUrl
     }
-    
+
     private void HandleAvatarSelected(InputFileChangeEventArgs e)
     {
         var file = e.File;

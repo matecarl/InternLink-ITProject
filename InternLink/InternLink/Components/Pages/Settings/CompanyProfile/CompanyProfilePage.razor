@@ -1,55 +1,66 @@
-@page "/CompanyProfile"
+@rendermode InteractiveServer
+
+@page "/company-profile"
 @using System.Security.Claims
 @using InternLink.Data
 @using InternLink.Models
+@using InternLink.Services.Profiles
+@using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
-@inject ApplicationDbContext DbContext
+@inject NavigationManager NavigationManager
+@inject IProfileService ProfileService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject InternLink.Data.ApplicationDbContext DbContext
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor HttpContextAccessor
 
-<PageTitle>Company Profile</PageTitle>
+<PageTitle>Company profile</PageTitle>
 
 <h3>CompanyProfile</h3>
-<label class="form-control w-full max-w-xs">
-    <div class="label">
-        <span class="label-text">Name Company</span>
-    </div>
-    <input type="text" placeholder="Enter the name of your company" class="input input-bordered w-full max-w-xs" />
 
-    <div class="label">
-        <span class="label-text">Description</span>
-    </div>
-    <input type="text" placeholder="Enter a description about your company" class="input input-bordered w-full max-w-xs" />
+@if (company == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <EditForm Model="@company" method="post" OnValidSubmit="HandleValidSubmit" FormName="companyProfileForm" Enhance>
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <input type="hidden" name="company.Id" value="@company.Id" />
 
-    <div class="label">
-        <span class="label-text">Location</span>
-    </div>
-    <input type="text" placeholder="Enter the location of the company" class="input input-bordered w-full max-w-xs" />
+        <div class="form-control w-full max-w-xs">
+            <div class="label">
+                <span class="label-text">Company Name</span>
+            </div>
+            <InputText @bind-Value="company.CompanyName" placeholder="Enter the name of your company" class="input input-bordered w-full max-w-xs"/>
+            <ValidationMessage For="() => company.CompanyName" class="text-red-500 text-sm mt-1" />
 
-    <div class="label">
-        <span class="label-text">Enternal Links</span>
-    </div>
+            <div class="label">
+                <span class="label-text">Description</span>
+            </div>
+            <InputText @bind-Value="company.Description" placeholder="Enter a description about your company" class="input input-bordered w-full max-w-xs"/>
+            <ValidationMessage For="() => company.Description" class="text-red-500 text-sm mt-1" />
 
-    <input type="url"  class="input input-bordered w-full max-w-xs" />
+            <div class="label">
+                <span class="label-text">Location</span>
+            </div>
+            <InputText @bind-Value="company.Location" placeholder="Enter the location of the company" class="input input-bordered w-full max-w-xs"/>
+            <ValidationMessage For="() => company.Location" class="text-red-500 text-sm mt-1" />
 
-    <div class="label">
-        <span class="label-text-alt">Add links to your social profiles or website</span>
-    </div>
+            <div class="label">
+                <span class="label-text">Website URL</span>
+            </div>
+            <InputText @bind-Value="company.WebsiteUrl" placeholder="Enter your website URL" class="input input-bordered w-full max-w-xs"/>
+            <ValidationMessage For="() => company.WebsiteUrl" class="text-red-500 text-sm mt-1" />
 
-    <div class="label">
-        <span class="label-text">Representives</span>
-    </div>
-
-    <input type="url" class="input input-bordered w-full max-w-xs" />
-
-    <div class="label">
-        <span class="label-text-alt">Add links to your social profiles or website</span>
-    </div>
-
-    <button class="btn btn-active btn-neutral">change profile</button>
-</label>
+            <button type="submit" class="btn btn-active btn-neutral">${company.Id == 0 ? "Create a profile" : "Change profile"}</button>
+        </div>
+    </EditForm>
+}
 
 @code {
-    private CompanyProfile company = new CompanyProfile();
+    private CompanyProfile company;
 
     protected override async Task OnInitializedAsync()
     {
@@ -59,12 +70,11 @@
         if (user.Identity.IsAuthenticated)
         {
             var userId = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            var applicationUser = await DbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            company = await DbContext.CompanyProfiles.FirstOrDefaultAsync(c => c.UserId == userId) ?? new CompanyProfile { UserId = userId };
+            company = await ProfileService.GetCompanyProfileAsync(userId) ?? new CompanyProfile { UserId = userId };
 
-            if (applicationUser != null)
+            if (company.CompanyName == null)
             {
-                company.CompanyName = applicationUser.UserName; // Assuming you want to use the username as the company name
+                company.CompanyName = user.Identity.Name;
             }
         }
     }
@@ -72,37 +82,45 @@
     private async Task HandleValidSubmit()
     {
         Console.WriteLine($"CompanyName: {company.CompanyName}, " +
-                          $"Industry: {company.Industry}, " +
-                          $"WebsiteUrl: {company.WebsiteUrl}");
-        
+                          $"Description: {company.Description}, " +
+                          $"Location: {company.Location}, " +
+                          $"WebsiteUrl: {company.WebsiteUrl}, " +
+                          $"Industry: {company.Industry}");
+
         var existingCompany = await DbContext.CompanyProfiles.FirstOrDefaultAsync(c => c.UserId == company.UserId);
-        if (existingCompany != null)
+
+        if (existingCompany == null)
         {
-            existingCompany.CompanyName = company.CompanyName;
-            existingCompany.Industry = company.Industry;
-            existingCompany.WebsiteUrl = company.WebsiteUrl;
-            DbContext.CompanyProfiles.Update(existingCompany);
+            // Create new profile
+            await DbContext.CompanyProfiles.AddAsync(company);
+            await DbContext.SaveChangesAsync();
         }
         else
         {
-            DbContext.CompanyProfiles.Add(company);
+            // Update existing profile
+            DbContext.CompanyProfiles.Update(company);
+            await DbContext.SaveChangesAsync();
+            return;
         }
 
-        var applicationUser = await DbContext.Users.FirstOrDefaultAsync(u => u.Id == company.UserId);
-        if (applicationUser != null)
-        {
-            applicationUser.UserName = company.CompanyName; // Assuming you want to update the username with the company name
-            DbContext.Users.Update(applicationUser);
-        }
-
-        await DbContext.SaveChangesAsync();
+        existingCompany.CompanyName = company.CompanyName;
+        existingCompany.Description = company.Description;
+        existingCompany.Location = company.Location;
+        existingCompany.WebsiteUrl = company.WebsiteUrl;
     }
 
-//    private void HandleAvatarSelected(InputFileChangeEventArgs e)
-//    {
-//        var file = e.File;
-        // Process the file and update company.AvatarUrl
-        // For example, save the file to a server or cloud storage and set the URL
-//        company.AvatarUrl = "Images/company_avatar.png"; // Update with actual URL
-//    }
+    // private void HandleFileSelected(InputFileChangeEventArgs e)
+    // {
+    //     // Handle file upload logic here
+    //     var file = e.File;
+    //     // Process the file and update company.ResumeUrl
+    // }
+    //
+    // private void HandleAvatarSelected(InputFileChangeEventArgs e)
+    // {
+    //     var file = e.File;
+    //     // Process the file and update company.AvatarUrl
+    //     // For example, save the file to a server or cloud storage and set the URL
+    //     company.ProfilePhotoUrl = "Images/company_avatar.png"; // Update with actual URL
+    // }
 }
