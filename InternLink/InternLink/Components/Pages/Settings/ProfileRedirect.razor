@@ -1,0 +1,40 @@
+@page "/profile-redirect"
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+<PageTitle>Profile Redirect</PageTitle>
+
+<h3>Redirecting...</h3>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var isStudent = user.IsInRole("Student");
+            var isCompany = user.IsInRole("Company");
+
+            if (isStudent)
+            {
+                NavigationManager.NavigateTo("/student-profile");
+            }
+            else if (isCompany)
+            {
+                NavigationManager.NavigateTo("/company-profile");
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/unauthorized");
+            }
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+    }
+}

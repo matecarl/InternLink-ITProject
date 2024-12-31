@@ -1,0 +1,145 @@
+@rendermode InteractiveServer
+
+@page "/student-profile"
+@using System.Security.Claims
+@using InternLink.Data
+@using InternLink.Models
+@using InternLink.Services.Profiles
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject NavigationManager NavigationManager
+@inject IProfileService ProfileService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject InternLink.Data.ApplicationDbContext DbContext
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor HttpContextAccessor
+
+<PageTitle>Student profile</PageTitle>
+
+<h3>StudentProfile</h3>
+
+@if (student == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <EditForm Model="@student" method="post" OnValidSubmit="HandleValidSubmit" FormName="studentProfileForm" Enhance>
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <input type="hidden" name="student.Id" value="@student.Id" />
+
+        <div class="form-control w-full max-w-xs">
+            <div class="label">
+                <span class="label-text">Upload Avatar</span>
+            </div>
+            <div class="avatar">
+                <div class="ring-primary ring-offset-base-100 w-24 rounded-full ring ring-offset-2">
+                    <InputFile OnChange="HandleAvatarSelected" class="input input-bordered w-full max-w-xs"/>
+                </div>
+            </div>
+
+            <div class="label">
+                <span class="label-text">First name</span>
+            </div>
+            <InputText @bind-Value="student.FirstName" placeholder="Enter your first name" class="input input-bordered w-full max-w-xs"/>
+            <ValidationMessage For="() => student.FirstName" class="text-red-500 text-sm mt-1" />
+
+            <div class="label">
+                <span class="label-text">Last name</span>
+            </div>
+            <InputText @bind-Value="student.LastName" placeholder="Enter your last name" class="input input-bordered w-full max-w-xs"/>
+            <ValidationMessage For="() => student.LastName" class="text-red-500 text-sm mt-1" />
+
+            <div class="label">
+                <span class="label-text">Bio</span>
+            </div>
+            <InputText @bind-Value="student.Description" placeholder="Write a short bio about yourself" class="input input-bordered w-full max-w-xs"/>
+            <ValidationMessage For="() => student.Description" class="text-red-500 text-sm mt-1" />
+
+            <div class="label">
+                <span class="label-text">Current Study</span>
+            </div>
+            <InputText @bind-Value="student.Study" placeholder="Enter your current study details" class="input input-bordered w-full max-w-xs"/>
+            <ValidationMessage For="() => student.Study" class="text-red-500 text-sm mt-1" />
+
+            <div class="label">
+                <span class="label-text">Upload Resume</span>
+            </div>
+            <InputFile OnChange="HandleFileSelected" class="input input-bordered w-full max-w-xs"/>
+
+            <button type="submit" class="btn btn-active btn-neutral">${student.Id == 0 ? "Create a profile" : "Change profile"}</button>
+        </div>
+    </EditForm>
+}
+
+@code {
+    private StudentProfile student;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var userId = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            student = await ProfileService.GetStudentProfileAsync(userId) ?? new StudentProfile { UserId = userId };
+
+            if (student.UserName == null)
+            {
+                student.UserName = user.Identity.Name;
+            }
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        Console.WriteLine($"UserName: {student.UserName}, " +
+                          $"FirstName: {student.FirstName}, " +
+                          $"LastName: {student.LastName}, " +
+                          $"Description: {student.Description}, " +
+                          $"Study: {student.Study}, " +
+                          $"Avatar: {student.ProfilePhotoUrl}, " +
+                          $"ResumeUrl: {student.ResumeUrl}");
+
+        var existingStudent = await DbContext.StudentProfiles.FirstOrDefaultAsync(s => s.UserId == student.UserId);
+        
+        if (existingStudent == null)
+        {
+            // Create new profile
+            await DbContext.StudentProfiles.AddAsync(student);
+            await DbContext.SaveChangesAsync();
+        }
+        else
+        {
+            // Update existing profile
+            DbContext.StudentProfiles.Update(student);
+            await DbContext.SaveChangesAsync();
+            return; 
+        }
+        
+        existingStudent.UserName = student.UserName;
+        existingStudent.FirstName = student.FirstName;
+        existingStudent.LastName = student.LastName;
+        existingStudent.Description = student.Description;
+        existingStudent.Study = student.Study;
+        existingStudent.ResumeUrl = student.ResumeUrl;
+        existingStudent.ProfilePhotoUrl = student.ProfilePhotoUrl;
+    }
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        // Handle file upload logic here
+        var file = e.File;
+        // Process the file and update student.ResumeUrl
+    }
+
+    private void HandleAvatarSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        // Process the file and update student.AvatarUrl
+        // For example, save the file to a server or cloud storage and set the URL
+        student.ProfilePhotoUrl = "Images/avatar.png"; // Update with actual URL
+    }
+}
