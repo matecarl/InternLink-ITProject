@@ -12,6 +12,9 @@ public class CompanyProfile
     public string UserId { get; set; }
     public ApplicationUser? User { get; set; }
     public string CompanyName { get; set; }
+    public string Description { get; set; }
+    public string Location { get; set; }
+    
     public string Industry { get; set; }
     public string WebsiteUrl { get; set; }
 
