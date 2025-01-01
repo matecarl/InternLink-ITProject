@@ -7,4 +7,5 @@ namespace InternLink.Data;
 public class ApplicationUser : IdentityUser
 {
     public ICollection<Internship> Internships { get; }
+    public ICollection<Swipe> Swipes { get; }
 }
