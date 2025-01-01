@@ -15,7 +15,7 @@
             <nav class="mt-6">
                 <ul>
                     <li>
-                        <NavLink href="Account/Profile" class="block py-2 px-4 rounded-lg hover:bg-gray-100 text-gray-700">
+                        <NavLink href="Account/Manage/Profile" class="block py-2 px-4 rounded-lg hover:bg-gray-100 text-gray-700">
                             <AuthorizeView Roles="Company">
                                 Company Profile
                             </AuthorizeView>
@@ -27,9 +27,6 @@
                     <li>
                         <NavLink href="Account/Manage" class="block py-2 px-4 rounded-lg hover:bg-gray-100 text-gray-700">Account</NavLink>
                     </li>
-                    @* <li> *@
-                    @*     <NavLink href="Account/Notifications" class="block py-2 px-4 rounded-lg hover:bg-gray-100 text-gray-700">Notifications</NavLink> *@
-                    @* </li> *@
                     <AuthorizeView Roles="Company">
                         <li>
                             <NavLink href="Internships" class="block py-2 px-4 rounded-lg hover:bg-gray-100 text-gray-700">Manage Internships</NavLink>

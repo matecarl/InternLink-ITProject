@@ -1,0 +1,112 @@
+@rendermode InteractiveServer
+
+@using System.Security.Claims
+@using InternLink.Data
+@using InternLink.Services.Profiles
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject NavigationManager NavigationManager
+@inject IProfileService ProfileService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject InternLink.Data.ApplicationDbContext DbContext
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor HttpContextAccessor
+
+@if (companyProfile is not null)
+{
+<EditForm Model="@companyProfile" method="post" OnValidSubmit="HandleValidSubmit" FormName="companyProfileForm" Enhance>
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <input type="hidden" name="company.Id" value="@companyProfile.Id" />
+
+    <div class="form-control w-full max-w-xs">
+        <div class="label">
+            <span class="label-text">Company Name</span>
+        </div>
+        <InputText @bind-Value="companyProfile.CompanyName" placeholder="Enter the name of your company" class="input input-bordered w-full max-w-xs"/>
+        <ValidationMessage For="() => companyProfile.CompanyName" class="text-red-500 text-sm mt-1" />
+
+        <div class="label">
+            <span class="label-text">Description</span>
+        </div>
+        <InputText @bind-Value="companyProfile.Description" placeholder="Enter a description about your company" class="input input-bordered w-full max-w-xs"/>
+        <ValidationMessage For="() => companyProfile.Description" class="text-red-500 text-sm mt-1" />
+
+        <div class="label">
+            <span class="label-text">Industry</span>
+        </div>
+        <InputText @bind-Value="companyProfile.Industry" placeholder="Enter the industry of the company" class="input input-bordered w-full max-w-xs"/>
+        <ValidationMessage For="() => companyProfile.Industry" class="text-red-500 text-sm mt-1" />
+
+        <div class="label">
+            <span class="label-text">Location</span>
+        </div>
+        <InputText @bind-Value="companyProfile.Location" placeholder="Enter the location of the company" class="input input-bordered w-full max-w-xs"/>
+        <ValidationMessage For="() => companyProfile.Location" class="text-red-500 text-sm mt-1" />
+
+        <div class="label">
+            <span class="label-text">Website URL</span>
+        </div>
+        <InputText @bind-Value="companyProfile.WebsiteUrl" placeholder="Enter your website URL" class="input input-bordered w-full max-w-xs"/>
+        <ValidationMessage For="() => companyProfile.WebsiteUrl" class="text-red-500 text-sm mt-1" />
+
+        <button type="submit" class="btn btn-active btn-neutral">Update Profile</button>
+    </div>
+</EditForm>
+}
+else
+{
+    <p><em>Loading...</em></p>
+}
+@code {
+    private Models.CompanyProfile companyProfile;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var userId = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            companyProfile = await ProfileService.GetCompanyProfileAsync(userId) ?? new Models.CompanyProfile { UserId = userId };
+
+            if (companyProfile.CompanyName == null)
+            {
+                companyProfile.CompanyName = user.Identity.Name;
+            }
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        var existingCompany = await DbContext.CompanyProfiles.FirstOrDefaultAsync(c => c.UserId == companyProfile.UserId);
+
+        if (existingCompany == null)
+        {
+            // Create new profile
+            await DbContext.CompanyProfiles.AddAsync(companyProfile);
+        }
+        else
+        {
+            // Update existing profile
+            DbContext.CompanyProfiles.Update(companyProfile);
+        }
+        await DbContext.SaveChangesAsync();
+    }
+
+    // private void HandleFileSelected(InputFileChangeEventArgs e)
+    // {
+    //     // Handle file upload logic here
+    //     var file = e.File;
+    //     // Process the file and update company.ResumeUrl
+    // }
+    //
+    // private void HandleAvatarSelected(InputFileChangeEventArgs e)
+    // {
+    //     var file = e.File;
+    //     // Process the file and update company.AvatarUrl
+    //     // For example, save the file to a server or cloud storage and set the URL
+    //     company.ProfilePhotoUrl = "Images/company_avatar.png"; // Update with actual URL
+    // }
+}

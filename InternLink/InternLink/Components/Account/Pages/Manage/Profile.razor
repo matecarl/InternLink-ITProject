@@ -1,0 +1,14 @@
+@page "/Account/Manage/Profile"
+@using InternLink.Components.Pages.Settings
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Sections
+@attribute [Authorize]
+
+<SectionContent SectionName="Setting">Edit your profile</SectionContent>
+
+<AuthorizeView Roles="Company">
+    <EditCompanyProfileComponent/>
+</AuthorizeView>
+<AuthorizeView Roles="Student">
+    <EditStudentProfileComponent/>
+</AuthorizeView>

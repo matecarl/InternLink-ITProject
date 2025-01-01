@@ -12,10 +12,13 @@ public class CompanyProfile
     public string UserId { get; set; }
     public ApplicationUser? User { get; set; }
     public string CompanyName { get; set; }
-    public string Description { get; set; }
-    public string Location { get; set; }
     
+    [Required(ErrorMessage = "Provide a description")]
+    public string Description { get; set; }
+    public string? Location { get; set; }
+    
+    [Required(ErrorMessage = "Provide an industry")]
     public string Industry { get; set; }
-    public string WebsiteUrl { get; set; }
+    public string? WebsiteUrl { get; set; }
 
 }
