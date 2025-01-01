@@ -1,0 +1,143 @@
+@page "/pending"
+@using Humanizer
+@using InternLink.Data
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Pending Swipes</PageTitle>
+
+<div class="p-6 bg-gray-100 min-h-screen">
+    <!-- Page Header -->
+    <div class="max-w-7xl mx-auto mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Pending Swipes</h1>
+        <p class="text-gray-600">View and manage your pending internship swipes below.</p>
+    </div>
+
+    <!-- Pending Swipe Cards Container -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto relative">
+        
+        @if (PendingSwipes is not null)
+        {
+            if (PendingSwipes.Any())
+            {
+                @foreach(var swipe in PendingSwipes)
+                {
+                <div class="bg-white shadow-lg rounded-lg p-4 flex items-start space-x-4 relative">
+                    <!-- Time Ago -->
+                    <span class="absolute top-2 right-4 text-xs text-gray-400">
+                        @((DateTime.Now - swipe.SwipedAt).Humanize()) ago
+                    </span>
+                    
+                    <div class="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center text-blue-600">
+                        <i class="fas fa-briefcase text-xl"></i>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1">
+                        <NavLink href="@($"swipe/internship?id={@swipe.Internship.Id}")">
+                            <h2 class="card-title text-lg font-semibold">@swipe.Internship.Title</h2>
+                        </NavLink>
+                        <p class="text-sm text-gray-500">by @swipe.Internship.UserId</p>
+
+                        <!-- Details Row -->
+                        <div class="mt-4 flex flex-wrap gap-2 text-sm text-gray-600">
+                            <p class="badge badge-outline flex items-center space-x-2">
+                                <i class="fas fa-map-marker-alt text-gray-500"></i>
+                                <span>@swipe.Internship.Location</span>
+                            </p>
+                            <p class="badge badge-outline flex items-center space-x-2">
+                                <i class="fas fa-clock text-gray-500"></i>
+                                <span>Min. @swipe.Internship.MinDuration Months</span>
+                            </p>
+                            <p class="badge badge-outline flex items-center space-x-2">
+                                <i class="fas fa-laptop-house text-gray-500"></i>
+                                <span>@swipe.Internship.RemoteLevel</span>
+                            </p>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="mt-4 flex space-x-2">
+                            <button class="btn btn-sm btn-error" @onclick="@(e => ShowSwipeDeleteConfirmation(@swipe.Id))">Cancel Swipe</button>
+                            @* <button class="btn btn-sm btn-secondary">Skip</button> *@
+                        </div>
+                    </div>
+                </div>
+                }
+            }
+            else
+            {
+            <p>No pending swipes found.</p>
+            }
+        }
+        else
+        {
+        <p>
+            <em>Loading...</em>
+        </p>
+        }
+    </div>
+
+    <!-- Pagination Button -->
+    @* <div class="max-w-7xl mx-auto mt-8 flex justify-center"> *@
+    @*     <button class="btn btn-outline">Load More</button> *@
+    @* </div> *@
+</div>
+
+
+<DeleteConfirmationModal OnConfirmation="ConfirmDelete" @ref="DeleteConfirmation" />
+
+@code {
+    public DeleteConfirmationModal DeleteConfirmation { get; set; }
+
+    private int deleteId;
+    
+    private List<Models.Swipe>? PendingSwipes;
+
+    private ApplicationDbContext _context;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _context = await DbFactory.CreateDbContextAsync();
+        
+        PendingSwipes = await _context.Swipes
+            .Where(s => s.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User) &&
+                        s.Accepted == true)
+            .Include(s => s.Internship)
+            //TODO filter swipes that have been matched already
+            .ToListAsync();
+    }
+
+    private async Task ConfirmDelete(bool confirmed)
+    {
+        if (!confirmed) return;
+        
+        var _swipe = await _context.Swipes.FindAsync(deleteId);
+        
+        if (_swipe == null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+        
+        if (_swipe.UserId != UserManager.GetUserId(HttpContextAccessor.HttpContext.User))
+        {
+            NavigationManager.NavigateTo("unauthorized");
+        }
+
+        _context.Swipes.Remove(_swipe);
+        await _context.SaveChangesAsync();
+        PendingSwipes.Remove(_swipe);
+        // StateHasChanged();   
+    }
+
+    private async Task ShowSwipeDeleteConfirmation(int swipeId)
+    {
+        deleteId = swipeId;
+        DeleteConfirmation.Show();
+    }
+
+}

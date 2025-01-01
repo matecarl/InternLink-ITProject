@@ -10,17 +10,9 @@
             <img alt="Logo" src="Images/Logo.png" width="100px"/>
         </NavLink>
 
-        <NavLink class="btn btn-ghost btn-sm">
-            Discover
+        <NavLink href="/swipe" class="btn btn-ghost btn-sm">
+            Swipe
         </NavLink>
-    
-        <AuthorizeView Roles="Student">
-            <Authorized>
-                <NavLink class="btn btn-ghost btn-sm">
-                    Matches
-                </NavLink>
-            </Authorized>
-        </AuthorizeView>
 
         <NavLink class="btn btn-ghost btn-sm">
             Companies
@@ -40,7 +32,12 @@
                     <ul tabindex="0" class="dropdown-content menu z-[1] bg-base-200 p-6 rounded-box shadow w-56 gap-2">
                         <span>@context.User.Identity?.Name</span>
                         <li>
-                            <NavLink href="#">Profile</NavLink>
+                            <AuthorizeView Roles="Company" Context="CompanyContext">
+                                <NavLink href="company/">View Profile</NavLink>
+                            </AuthorizeView>
+                            <AuthorizeView Roles="Student" Context="StudentContext">
+                                <NavLink href="student/">View Profile</NavLink>
+                            </AuthorizeView>
                         </li>
                         <li>
                             <NavLink href="Account/Manage">Settings</NavLink>
