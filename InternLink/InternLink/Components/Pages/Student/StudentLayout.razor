@@ -1,0 +1,52 @@
+@layout Layout.MainLayout
+@inherits LayoutComponentBase
+
+<div class="flex h-screen">
+    <!-- Sidebar -->
+    <div id="sidebar" class="w-64 bg-white shadow-md h-full flex flex-col transition-transform">
+        @* <button id="toggle-btn" class="p-3 text-gray-600 hover:text-gray-900"> *@
+        @*     <i class="fas fa-bars"></i> *@
+        @* </button> *@
+
+        <ul class="menu p-4 space-y-2">
+            <li class="menu-title">
+                <span>Navigation</span>
+            </li>
+            <li>
+                <a href="#" class="flex items-center space-x-3">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <NavLink href="#" class="flex items-center space-x-3">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </NavLink>
+            </li>
+            <li>
+                <NavLink href="/swipe" class="flex items-center space-x-3">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Internships</span>
+                </NavLink>
+            </li>
+            <li>
+                <NavLink href="#" class="flex items-center space-x-3">
+                    <i class="fa-solid fa-user-group"></i>
+                    <span>Matches</span>
+                </NavLink>
+            </li>
+            <li>
+                <NavLink href="/pending" class="flex items-center space-x-3">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Pending</span>
+                </NavLink>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col bg-gray-100">
+        @Body
+    </div>
+</div>

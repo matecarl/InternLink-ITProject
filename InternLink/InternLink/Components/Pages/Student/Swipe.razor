@@ -1,0 +1,145 @@
+@page "/swipe"
+@attribute [Authorize(Roles = "Student")]
+
+@using InternLink.Data
+@using InternLink.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor HttpContextAccessor
+@rendermode InteractiveServer
+
+
+<PageTitle>Swipe</PageTitle>
+
+<!-- Content Area -->
+<div class="flex flex-col items-center p-8 min-h-screen">
+    @if (internship is not null)
+    {
+    <div class="w-full max-w-3xl bg-white rounded-lg shadow-lg p-6">
+        <!-- Internship Header -->
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h2 class="text-xl font-bold text-gray-800">@internship.Title</h2>
+                <p class="text-gray-600">@internship.User?.UserName</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">@internship.PostedAt.ToString("dd MMM yyyy")</p>
+            </div>
+        </div>
+
+        <!-- Internship Details -->
+        <div class="flex items-center space-x-6 mb-8">
+            <p class="text-gray-600 flex items-center space-x-2">
+                <i class="fas fa-map-marker-alt text-gray-500"></i>
+                <span>@internship.Location</span>
+            </p>
+            <p class="text-gray-600 flex items-center space-x-2">
+                <i class="fas fa-clock text-gray-500"></i>
+                <span>Minimum @internship.MinDuration months</span>
+            </p>
+            <p class="text-gray-600 flex items-center space-x-2">
+                <i class="fas fa-laptop-house text-gray-500"></i>
+                <span>@internship.RemoteLevel</span>
+            </p>
+        </div>
+
+        <!-- Skills Section -->
+        @* <div class="mb-4"> *@
+        @*     <h3 class="font-semibold text-gray-800">Skills</h3> *@
+        @*     <div class="flex flex-wrap gap-2 mt-2"> *@
+        @*         <span class="badge badge-outline">Communication</span> *@
+        @*         <span class="badge badge-outline">Problem Solving</span> *@
+        @*         <span class="badge badge-outline">Teamwork</span> *@
+        @*         <span class="badge badge-outline">Creativity</span> *@
+        @*     </div> *@
+        @* </div> *@
+
+        <!-- Additional Details -->
+        @* <div> *@
+        @*     <div> *@
+        @*         <p class="text-sm text-gray-500">Remote Work</p> *@
+        @*         <p class="text-gray-800">@internship.RemoteLevel</p> *@
+        @*     </div> *@
+        @* </div> *@
+    </div>
+
+    <!-- Swiping Controls -->
+    <div class="flex justify-center space-x-6 mt-6 bg-gray-200 p-3 rounded-xl">
+        <button @onclick="SwipeLeft" class="btn btn-error btn-circle">
+            <i class="fa-solid fa-xmark fa-2xl"></i>
+        </button>
+        @* <button class="btn btn-ghost"> *@
+        @*     <i class="fa-solid fa-angles-right fa-2xl"></i> *@
+        @* </button> *@
+        <NavLink href="@($"swipe/internship?id={internship.Id}")" class="btn">
+            View
+        </NavLink>
+        @* <button class="btn btn-ghost"> *@
+        @*     <i class="fa-regular fa-bookmark fa-2xl" style="color: #B197FC;"></i> *@
+        @* </button> *@
+        <button @onclick="SwipeRight" class="btn btn-success btn-circle">
+            <i class="fa-solid fa-check fa-2xl"></i>
+        </button>
+    </div>
+    }
+    else
+    {
+    <p>Loading...</p>
+    }
+</div>
+
+@code {
+    private Models.Internship internship;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInternship();
+    }
+    
+    private async Task SwipeRight()
+    {
+        await CreateSwipe(true);
+        await LoadInternship();
+    }
+
+    private async Task SwipeLeft()
+    {
+        await CreateSwipe(false);
+        await LoadInternship();
+    }
+
+    private async Task CreateSwipe(bool accepted)
+    {
+        await using var context = await DbFactory.CreateDbContextAsync();
+
+        Models.Swipe swipe = new Models.Swipe
+        {
+            Accepted = accepted,
+            InternshipId = internship.Id,
+            UserId = UserManager.GetUserId(HttpContextAccessor.HttpContext.User),
+            SwipedAt = DateTime.Now
+        };
+
+        await context.Swipes.AddAsync(swipe);
+        await context.SaveChangesAsync();
+    }
+
+    private async Task LoadInternship()
+    {
+        await using var context = await DbFactory.CreateDbContextAsync();
+
+        internship = await context.Internships
+            .Where(i => !context.Swipes // Check if the user has already swiped on this internship
+                .Any(
+                    s => s.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User) && 
+                         s.InternshipId == i.Id
+                )
+            )
+            .FirstOrDefaultAsync();
+            
+    }
+
+}
