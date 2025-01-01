@@ -1,7 +1,52 @@
 ﻿ @page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>InternLink</PageTitle>
 
-<h1>Hello, world!</h1>
+<!-- Hero Section -->
+<section class="bg-gradient-to-r from-blue-600 to-blue-400 text-white py-20">
+    <div class="max-w-7xl mx-auto text-center">
+        <h1 class="text-4xl font-extrabold sm:text-5xl">
+            Find the Perfect Internship, Connect with Top Companies
+        </h1>
+        <p class="mt-4 text-lg sm:text-xl">
+            An easy-to-use platform that connects students with internships at top companies within your university.
+        </p>
+        <div class="mt-8">
+            <NavLink href="/Account/Register" class="btn btn-primary text-lg">Get Started</NavLink>
+        </div>
+    </div>
+</section>
 
-Welcome to your new app.
+<!-- Features Section -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto text-center">
+        <h2 class="text-3xl font-extrabold text-gray-800">Why Choose Us?</h2>
+        <p class="mt-4 text-lg text-gray-600">We simplify the internship process, making it faster and easier for both students and companies.</p>
+        <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-12">
+            <!-- Feature 1 -->
+            <div class="bg-gray-100 p-6 rounded-lg shadow-lg">
+                <h3 class="text-xl font-semibold text-blue-600">Easy Application Process</h3>
+                <p class="mt-4 text-gray-700">Apply to internships with just a few clicks, and track your applications in real time.</p>
+            </div>
+            <!-- Feature 2 -->
+            <div class="bg-gray-100 p-6 rounded-lg shadow-lg">
+                <h3 class="text-xl font-semibold text-blue-600">Top Companies</h3>
+                <p class="mt-4 text-gray-700">Connect with the best companies offering internships relevant to your career path.</p>
+            </div>
+            <!-- Feature 3 -->
+            <div class="bg-gray-100 p-6 rounded-lg shadow-lg">
+                <h3 class="text-xl font-semibold text-blue-600">Personalized Matches</h3>
+                <p class="mt-4 text-gray-700">Our matching algorithm ensures that students are paired with the best-fitting internships.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-16 bg-blue-600 text-white text-center">
+    <h2 class="text-3xl font-extrabold">Ready to Get Started?</h2>
+    <p class="mt-4 text-lg">Join thousands of students and companies finding the perfect match.</p>
+    <div class="mt-8">
+        <NavLink href="/Account/Register" class="btn btn-secondary text-lg">Sign Up Now</NavLink>
+    </div>
+</section>
