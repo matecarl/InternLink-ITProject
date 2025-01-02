@@ -26,6 +26,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                .HasOne<Internship>(x => x.Internship)
                .WithMany()
                .OnDelete(DeleteBehavior.Cascade);
+          
+          modelBuilder
+               .Entity<Internship>()
+               .HasOne<CompanyProfile>(x => x.CompanyProfile)
+               .WithMany()
+               .OnDelete(DeleteBehavior.Restrict);
      
      }
 }
