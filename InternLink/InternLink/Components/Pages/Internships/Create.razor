@@ -8,6 +8,8 @@
 @using Microsoft.AspNetCore.Identity
 @using Models
 @using Microsoft.AspNetCore.Http
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
 @inject IInternshipRepository Repository
 @inject UserManager<ApplicationUser> UserManager
@@ -97,6 +99,15 @@
     [Authorize(Roles = "Company")]
     private async Task AddInternship()
     {
+        await using var context = await DbFactory.CreateDbContextAsync();
+
+        bool hasProfile = await context.CompanyProfiles.AnyAsync(x => x.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User));
+
+        if (!hasProfile)
+        {
+            NavigationManager.NavigateTo("Account/Manage/Profile");
+        }
+        
         Internship.PostedAt = DateTime.Now;
         Internship.UserId =  UserManager.GetUserId(HttpContextAccessor.HttpContext.User);
 
