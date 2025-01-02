@@ -101,15 +101,18 @@
     {
         await using var context = await DbFactory.CreateDbContextAsync();
 
-        bool hasProfile = await context.CompanyProfiles.AnyAsync(x => x.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User));
+        var _companyProfile = await context
+            .CompanyProfiles
+            .FirstAsync(c => c.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User));
 
-        if (!hasProfile)
+        if (_companyProfile == null)
         {
             NavigationManager.NavigateTo("Account/Manage/Profile");
         }
-        
+
         Internship.PostedAt = DateTime.Now;
         Internship.UserId =  UserManager.GetUserId(HttpContextAccessor.HttpContext.User);
+        Internship.CompanyId = _companyProfile.Id;
 
         await Repository.AddAsync(Internship);
         NavigationManager.NavigateTo($"internships/details?id={Internship.Id}");

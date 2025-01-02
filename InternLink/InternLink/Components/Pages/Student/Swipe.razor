@@ -23,7 +23,7 @@
         <div class="flex items-center justify-between mb-4">
             <div>
                 <h2 class="text-xl font-bold text-gray-800">@internship.Title</h2>
-                <p class="text-gray-600">@internship.User?.UserName</p>
+                <p class="text-gray-600">By @internship.CompanyProfile.CompanyName</p>
             </div>
             <div>
                 <p class="text-sm text-gray-500">@internship.PostedAt.ToString("dd MMM yyyy")</p>
@@ -138,6 +138,7 @@
                          s.InternshipId == i.Id
                 )
             )
+            .Include(i => i.CompanyProfile)
             .FirstOrDefaultAsync();
             
     }

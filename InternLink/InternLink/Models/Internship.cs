@@ -36,5 +36,9 @@ public class Internship
     [ForeignKey(nameof(User))]
     public string UserId { get; set; }
     public ApplicationUser? User { get; set; }
+    
+    [ForeignKey(nameof(CompanyProfile))]
+    public int CompanyId { get; set; }
+    public CompanyProfile? CompanyProfile { get; set; }
 
 }

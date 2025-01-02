@@ -23,6 +23,7 @@ public class InternshipRepository : IInternshipRepository
     public async Task<Internship> GetByIdAsync(int id)
     {
         var internship = await _context.Internships
+            .Include(x => x.CompanyProfile)
             .FirstOrDefaultAsync(x => x.Id == id);
         return internship;
     }

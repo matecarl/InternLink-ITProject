@@ -42,7 +42,7 @@
                         <NavLink href="@($"swipe/internship?id={@swipe.Internship.Id}")">
                             <h2 class="card-title text-lg font-semibold">@swipe.Internship.Title</h2>
                         </NavLink>
-                        <p class="text-sm text-gray-500">by @swipe.Internship.UserId</p>
+                        <p class="text-sm text-gray-500">by @swipe.Internship.CompanyProfile.CompanyName</p>
 
                         <!-- Details Row -->
                         <div class="mt-4 flex flex-wrap gap-2 text-sm text-gray-600">
@@ -108,6 +108,7 @@
             .Where(s => s.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User) &&
                         s.Accepted == true)
             .Include(s => s.Internship)
+            .ThenInclude(i => i.CompanyProfile)
             //TODO filter swipes that have been matched already
             .ToListAsync();
     }
@@ -131,7 +132,6 @@
         _context.Swipes.Remove(_swipe);
         await _context.SaveChangesAsync();
         PendingSwipes.Remove(_swipe);
-        // StateHasChanged();   
     }
 
     private async Task ShowSwipeDeleteConfirmation(int swipeId)
