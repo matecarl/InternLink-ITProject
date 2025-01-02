@@ -106,6 +106,8 @@ else
         
         
         await DbContext.SaveChangesAsync();
+        
+        NavigationManager.NavigateTo($"student?id={studentProfile.UserId}");
 
     }
 

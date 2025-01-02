@@ -3,6 +3,8 @@
 
 @inject NavigationManager NavigationManager
 @inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor HttpContextAccessor
 
 <nav class="navbar justify-between bg-gray-200">
     <div>
@@ -36,7 +38,7 @@
                                 <NavLink href="company/">View Profile</NavLink>
                             </AuthorizeView>
                             <AuthorizeView Roles="Student" Context="StudentContext">
-                                <NavLink href="student/">View Profile</NavLink>
+                                <NavLink href="@($"student?id={UserManager.GetUserId(HttpContextAccessor.HttpContext.User)}")">View Profile</NavLink>
                             </AuthorizeView>
                         </li>
                         <li>
