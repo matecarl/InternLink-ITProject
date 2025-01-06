@@ -51,4 +51,9 @@ public class ProfileService : IProfileService
         await _context.SaveChangesAsync();
     }
 
+    //to make sure that the company profile service is used to fetch the list of companies
+    public async Task<List<CompanyProfile>> GetAllCompaniesAsync()
+    {
+        return await _context.CompanyProfiles.ToListAsync();
+    }
 }
