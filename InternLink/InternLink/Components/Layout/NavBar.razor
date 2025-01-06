@@ -11,11 +11,16 @@
         <NavLink class="btn btn-ghost text-lg" href="">
             <img alt="Logo" src="Images/Logo.png" width="100px"/>
         </NavLink>
-
-        <NavLink href="/swipe" class="btn btn-ghost btn-sm">
-            Swipe
-        </NavLink>
-
+        <AuthorizeView Roles="Company">
+            <NavLink href="/incoming" class="btn btn-ghost btn-sm">
+                Student Swipes
+            </NavLink>
+        </AuthorizeView>
+        <AuthorizeView Roles="Student">
+            <NavLink href="/swipe" class="btn btn-ghost btn-sm">
+                Discover Internships
+            </NavLink>
+        </AuthorizeView>
         <NavLink class="btn btn-ghost btn-sm">
             Companies
         </NavLink>
