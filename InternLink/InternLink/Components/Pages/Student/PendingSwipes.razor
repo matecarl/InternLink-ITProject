@@ -23,11 +23,11 @@
     <!-- Pending Swipe Cards Container -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto relative">
         
-        @if (PendingSwipes is not null)
+        @if (PendingSwipesList is not null)
         {
-            if (PendingSwipes.Any())
+            if (PendingSwipesList.Any())
             {
-                @foreach(var swipe in PendingSwipes)
+                @foreach(var swipe in PendingSwipesList)
                 {
                 <div class="bg-white shadow-lg rounded-lg p-4 flex items-start space-x-4 relative">
                     <!-- Time Ago -->
@@ -98,13 +98,13 @@
 
     private int deleteId;
     
-    private List<Models.Swipe>? PendingSwipes;
+    private List<Models.Swipe>? PendingSwipesList;
 
     protected override async Task OnInitializedAsync()
     {
         var context = await DbFactory.CreateDbContextAsync();
 
-        PendingSwipes = await context.Swipes
+        PendingSwipesList = await context.Swipes
             .Where(
                 s => s.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User) &&
                 s.IsAccepted && 
@@ -136,7 +136,7 @@
         
         await context.SaveChangesAsync();
         
-        PendingSwipes.Remove(_swipe);
+        PendingSwipesList.Remove(_swipe);
     }
 
     private async Task ShowSwipeDeleteConfirmation(int swipeId)
