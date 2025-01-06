@@ -1,0 +1,147 @@
+@page "/incoming"
+@using Humanizer
+@using InternLink.Data
+@using InternLink.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize(Roles = "Company")]
+@rendermode InteractiveServer
+
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavigationManager
+
+<div class="container mx-auto p-6 space-y-6">
+    <h1 class="text-2xl font-bold text-gray-700">Manage Incoming Swipes</h1>
+
+    @if (Internships is not null)
+    {
+        @foreach (var internship in Internships)
+        {
+        <div class="bg-gray-50 shadow-md rounded-lg p-4 space-y-4">
+            <!-- Internship Header -->
+            <div class="flex justify-between items-center">
+                <div>
+                    <NavLink href=@($"/internship?id={internship.Id}") class="text-lg font-semibold text-gray-800">@internship.Title</NavLink>
+                    
+                    <div class="flex items-center space-x-4 text-sm text-gray-500 mt-1">
+                        <!-- Location -->
+                        <p class="flex items-center space-x-2">
+                            <i class="fas fa-map-marker-alt text-gray-500"></i>
+                            <span>San Francisco</span>
+                        </p>
+
+                        <!-- Minimum Duration -->
+                        <p class="flex items-center space-x-2">
+                            <i class="fas fa-clock text-gray-500"></i>
+                            <span>Min. @internship.MinDuration Months</span>
+                        </p>
+                        
+                        <!-- Remote Level -->
+                        <p class="flex items-center space-x-2">
+                            <i class="fas fa-laptop-house text-gray-500"></i>
+                            <span>Remote</span>
+                        </p>
+                    </div>
+                </div>
+                <span class="badge badge-info">@internship.Swipes.Count Pending Swipes</span>
+            </div>
+
+            <!-- Student Swipes -->
+            <div class="overflow-x-auto space-x-4 flex">
+                @foreach (var swipe in internship.Swipes)
+                {
+                    <div class="bg-white shadow rounded-lg p-4 flex-shrink-0 w-72 relative">
+
+                        <span class="absolute top-2 right-2 text-xs text-gray-400">
+                            @((DateTime.Now - swipe.SwipedAt).Humanize()) ago
+                        </span>
+
+
+                        <!-- Student Info -->
+                        <div>
+                            <NavLink href=@($"/student?id={swipe.UserId}") class="text-md font-semibold">@swipe.StudentProfile.FirstName @swipe.StudentProfile.LastName</NavLink>
+                            <p class="text-sm text-gray-500">@swipe.StudentProfile.Study</p>
+                            @* <p class="text-sm text-gray-500">Skills: @string.Join(", ", swipe.Student.Skills)</p> *@
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex justify-between mt-4">
+                            <button class="btn btn-sm btn-success" @onclick="() => AcceptSwipe(swipe.Id)">Accept</button>
+                            <NavLink class="btn btn-sm btn-neutral" href=@($"/student?id={swipe.UserId}")>View Profile</NavLink>
+                            <button class="btn btn-sm btn-error" @onclick="() => RejectSwipe(swipe.Id)">Reject</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        }
+    }
+    else
+    {
+    <p>Loading...</p>
+    }
+</div>
+
+
+@code {
+    private List<Internship>? Internships;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await using var context = await DbFactory.CreateDbContextAsync();
+
+        Internships = await context.Internships
+            .Where(i => i.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User))
+            .Include(i => i.Swipes
+                .Where(
+                    s => !s.IsInactive && 
+                    s.IsAccepted))
+            .ThenInclude(s => s.StudentProfile)
+            .ToListAsync();
+    }
+
+    private async Task AcceptSwipe(int swipeId)
+    {
+        await using var context = await DbFactory.CreateDbContextAsync();
+     
+        // Make the swipe inactive -> won't be shown again
+        var swipe = await context.Swipes.FirstOrDefaultAsync(s => s.Id == swipeId);
+
+        if (swipe == null || swipe.IsInactive || !swipe.IsAccepted) return;
+        
+        swipe.IsInactive = true;
+        
+        context.Swipes.Update(swipe);
+        
+        // Create a new match
+        var match = new Match
+        {
+            InternshipId = swipe.InternshipId,
+            UserId = swipe.UserId,
+            StudentProfileId = swipe.StudentProfileId,
+            MatchedAt = DateTime.Now
+        };
+        
+        await context.Matches.AddAsync(match);
+        
+        await context.SaveChangesAsync();
+    }
+
+    private async Task RejectSwipe(int swipeId)
+    {
+        await using var context = await DbFactory.CreateDbContextAsync();
+        
+        var swipe = await context.Swipes.FirstOrDefaultAsync(s => s.Id == swipeId);
+
+        if (swipe == null || swipe.IsInactive || !swipe.IsAccepted) return;
+        
+        swipe.IsInactive = true;
+        
+        context.Swipes.Update(swipe);
+        
+        await context.SaveChangesAsync();
+    }
+}
