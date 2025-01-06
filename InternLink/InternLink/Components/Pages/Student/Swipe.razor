@@ -117,7 +117,7 @@
 
         Models.Swipe swipe = new Models.Swipe
         {
-            Accepted = accepted,
+            IsAccepted = accepted,
             InternshipId = internship.Id,
             UserId = UserManager.GetUserId(HttpContextAccessor.HttpContext.User),
             SwipedAt = DateTime.Now

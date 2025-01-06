@@ -106,7 +106,9 @@
         
         PendingSwipes = await _context.Swipes
             .Where(s => s.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User) &&
-                        s.Accepted == true)
+                        s.IsAccepted == true)
+                        && s.IsInactive == false
+                )
             .Include(s => s.Internship)
             .ThenInclude(i => i.CompanyProfile)
             //TODO filter swipes that have been matched already

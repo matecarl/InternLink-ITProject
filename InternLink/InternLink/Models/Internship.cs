@@ -40,5 +40,7 @@ public class Internship
     [ForeignKey(nameof(CompanyProfile))]
     public int CompanyId { get; set; }
     public CompanyProfile? CompanyProfile { get; set; }
+    
+    public ICollection<Swipe> Swipes { get; set; }
 
 }
