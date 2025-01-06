@@ -1,1 +1,3 @@
+@using Microsoft.AspNetCore.Authorization
 @layout CompanyLayout
+@attribute [Authorize(Roles = "Company")]
