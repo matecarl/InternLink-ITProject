@@ -1,0 +1,86 @@
+
+@page "/company/matches"
+@using Humanizer
+@using InternLink.Data
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavigationManager
+
+<div class="container mx-auto p-6 space-y-6">
+    <h1 class="text-2xl font-bold text-gray-700">Your Matches</h1>
+
+    <!-- Matches List -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    @if (MatchesList is not null)
+    {
+        @foreach (var match in MatchesList)
+        {
+        <div class="bg-white shadow-lg rounded-lg p-4 flex flex-col justify-between relative">
+            <span class="absolute top-4 right-4 text-xs text-gray-400">
+                Matched @((DateTime.Now - match.MatchedAt).Humanize()) ago
+            </span>
+
+            <!-- Internship Info -->
+            <div>
+                <h2 class="text-lg font-semibold text-gray-800">@match.StudentProfile.FirstName @match.StudentProfile.LastName</h2>
+                <p class="text-sm text-gray-500">@match.StudentProfile.Study Student</p>
+
+                <!-- Enhanced Internship Title Display -->
+                <p class="mt-2 text-sm text-gray-700 flex items-center">
+                    <i class="fas fa-briefcase text-blue-600 mr-2"></i>
+                    Matched for
+                    <span class="font-medium text-gray-800 ml-1">@match.Internship.Title</span>
+                </p>
+            </div>
+
+            <!-- Details Row -->
+            <div class="mt-4 flex flex-wrap gap-2 text-sm text-gray-600">
+                <p class="badge badge-outline flex items-center space-x-2">
+                    <i class="fas fa-map-marker-alt text-gray-500"></i>
+                    <span>@match.Internship.Location</span>
+                </p>
+                <p class="badge badge-outline flex items-center space-x-2">
+                    <i class="fas fa-clock text-gray-500"></i>
+                    <span>Min. @match.Internship.MinDuration Months</span>
+                </p>
+                <p class="badge badge-outline flex items-center space-x-2">
+                    <i class="fas fa-laptop-house text-gray-500"></i>
+                    <span>@match.Internship.RemoteLevel</span>
+                </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-4 flex space-x-2">
+                <NavLink href=@($"student?id={@match.UserId}") class="btn btn-sm btn-primary">View Profile</NavLink>
+            </div>
+        </div>
+        }
+    }
+    else
+    {
+    <p>Loading...</p>
+    }
+    </div>
+</div>
+
+@code {
+    private List<Models.Match>? MatchesList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var context = await DbFactory.CreateDbContextAsync();
+        
+        MatchesList = await context.Matches
+            .Where(m => m.Internship.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User))
+            .Include(m => m.StudentProfile)
+            .Include(m => m.Internship)
+            .ToListAsync();
+    }
+
+
+}
