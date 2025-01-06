@@ -103,7 +103,7 @@
 
         var _companyProfile = await context
             .CompanyProfiles
-            .FirstAsync(c => c.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User));
+            .FirstOrDefaultAsync(c => c.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User));
 
         if (_companyProfile == null)
         {
