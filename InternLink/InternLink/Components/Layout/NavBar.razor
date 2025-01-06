@@ -3,6 +3,8 @@
 
 @inject NavigationManager NavigationManager
 @inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor HttpContextAccessor
 
 <nav class="navbar justify-between bg-gray-200">
     <div>
@@ -14,7 +16,7 @@
             Swipe
         </NavLink>
 
-        <NavLink class="btn btn-ghost btn-sm">
+        <NavLink href="/company-overview" class="btn btn-ghost btn-sm">
             Companies
         </NavLink>
     </div>
@@ -33,7 +35,7 @@
                         <span>@context.User.Identity?.Name</span>
                         <li>
                             <AuthorizeView Roles="Company" Context="CompanyContext">
-                                <NavLink href="company/">View Profile</NavLink>
+                                <NavLink href="@($"company?id={UserManager.GetUserId(HttpContextAccessor.HttpContext.User)}")">View Profile</NavLink>
                             </AuthorizeView>
                             <AuthorizeView Roles="Student" Context="StudentContext">
                                 <NavLink href="student/">View Profile</NavLink>
