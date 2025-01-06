@@ -120,7 +120,9 @@
             IsAccepted = accepted,
             InternshipId = internship.Id,
             UserId = UserManager.GetUserId(HttpContextAccessor.HttpContext.User),
-            SwipedAt = DateTime.Now
+            StudentProfileId = StudentProfile.Id,
+            SwipedAt = DateTime.Now,
+            IsInactive = !accepted
         };
 
         await context.Swipes.AddAsync(swipe);
@@ -130,17 +132,17 @@
     private async Task LoadInternship()
     {
         await using var context = await DbFactory.CreateDbContextAsync();
-
+        
+        // Find the first internship that the user hasn't swiped on
         internship = await context.Internships
-            .Where(i => !context.Swipes // Check if the user has already swiped on this internship
+            .Where(i => !context.Swipes
                 .Any(
                     s => s.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User) && 
-                         s.InternshipId == i.Id
+                    s.InternshipId == i.Id
                 )
             )
             .Include(i => i.CompanyProfile)
-            .FirstOrDefaultAsync();
-            
+            .FirstOrDefaultAsync(); 
     }
 
 }

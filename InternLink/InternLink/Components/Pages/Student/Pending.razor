@@ -1,6 +1,8 @@
 @page "/pending"
+@attribute [Authorize(Roles = "Student")]
 @using Humanizer
 @using InternLink.Data
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<ApplicationDbContext> DbFactory
@@ -98,41 +100,42 @@
     
     private List<Models.Swipe>? PendingSwipes;
 
-    private ApplicationDbContext _context;
-
     protected override async Task OnInitializedAsync()
     {
-        _context = await DbFactory.CreateDbContextAsync();
-        
-        PendingSwipes = await _context.Swipes
-            .Where(s => s.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User) &&
-                        s.IsAccepted == true)
-                        && s.IsInactive == false
-                )
+        var context = await DbFactory.CreateDbContextAsync();
+
+        PendingSwipes = await context.Swipes
+            .Where(
+                s => s.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User) &&
+                s.IsAccepted && 
+                !s.IsInactive)
             .Include(s => s.Internship)
             .ThenInclude(i => i.CompanyProfile)
-            //TODO filter swipes that have been matched already
             .ToListAsync();
     }
 
     private async Task ConfirmDelete(bool confirmed)
     {
+        var context = await DbFactory.CreateDbContextAsync();
+
         if (!confirmed) return;
-        
-        var _swipe = await _context.Swipes.FindAsync(deleteId);
-        
+
+        var _swipe = await context.Swipes.FindAsync(deleteId);
+
         if (_swipe == null)
         {
             NavigationManager.NavigateTo("notfound");
         }
-        
+
         if (_swipe.UserId != UserManager.GetUserId(HttpContextAccessor.HttpContext.User))
         {
             NavigationManager.NavigateTo("unauthorized");
         }
 
-        _context.Swipes.Remove(_swipe);
-        await _context.SaveChangesAsync();
+        context.Swipes.Remove(_swipe);
+        
+        await context.SaveChangesAsync();
+        
         PendingSwipes.Remove(_swipe);
     }
 
