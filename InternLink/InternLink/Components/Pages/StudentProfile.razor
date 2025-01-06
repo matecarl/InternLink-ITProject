@@ -111,7 +111,15 @@
         
         if (_studentProfile == null)
         {
-            NavigationManager.NavigateTo("notfound");
+            if (Id == UserManager.GetUserId(HttpContextAccessor.HttpContext.User))
+            {
+                NavigationManager.NavigateTo("/Account/Manage/Profile");
+            }
+            else
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            
         }
         
         studentProfile = _studentProfile;
