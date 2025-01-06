@@ -9,6 +9,7 @@
 @inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject UserManager<ApplicationUser> UserManager
 @inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
 
@@ -115,6 +116,21 @@
     {
         await using var context = await DbFactory.CreateDbContextAsync();
 
+        var StudentProfile = await context.StudentProfiles
+            .FirstOrDefaultAsync(s => s.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User));
+
+        // Navigate to profile creation, if user doesn't have a profile
+        if (StudentProfile == null) 
+        {
+            NavigationManager.NavigateTo("Account/Manage/Profile");
+        }
+
+        // Make sure the user hasn't already swiped on this internship
+        if (context.Swipes.Any(s => s.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User) && s.InternshipId == internship.Id))
+        {
+            return;
+        }
+            
         Models.Swipe swipe = new Models.Swipe
         {
             IsAccepted = accepted,
