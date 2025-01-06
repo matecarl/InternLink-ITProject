@@ -1,0 +1,18 @@
+@page "/student"
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize(Roles = "Company")]
+
+<div class="min-h-screen py-8">
+    <div class="container mx-auto">
+        <StudentProfileComponent UserId="@Id"/>
+    </div>
+</div>
+
+@code
+{
+    [SupplyParameterFromQuery]
+    private string Id { get; set; }
+}
+
+

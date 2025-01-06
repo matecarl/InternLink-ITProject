@@ -38,7 +38,7 @@
                                 <NavLink href="company/">View Profile</NavLink>
                             </AuthorizeView>
                             <AuthorizeView Roles="Student" Context="StudentContext">
-                                <NavLink href="@($"student?id={UserManager.GetUserId(HttpContextAccessor.HttpContext.User)}")">View Profile</NavLink>
+                                <NavLink href="profile">View Profile</NavLink>
                             </AuthorizeView>
                         </li>
                         <li>

@@ -1,0 +1,110 @@
+@using InternLink.Data
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor HttpContextAccessor
+
+<div class="bg-white shadow-lg rounded-lg p-6">
+    @if (studentProfile is not null)
+    {
+        <!-- Header Section -->
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="w-20 h-20 rounded-full bg-blue-200 flex items-center justify-center text-blue-600">
+                    <i class="fas fa-user text-4xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">@studentProfile.FirstName @studentProfile.LastName</h1>
+                    <p class="text-sm text-gray-600">@studentProfile.Study Student</p>
+                    <p class="text-sm text-gray-500">Location: San Francisco, CA</p>
+                </div>
+            </div>
+            <!-- Edit Button -->
+            @if (UserManager.GetUserId(HttpContextAccessor.HttpContext.User) == studentProfile.UserId)
+            {
+                <NavLink class="btn btn-sm btn-outline" href="Account/Manage/Profile">
+                    <i class="fas fa-edit mr-2"></i>Edit Profile
+                </NavLink>
+            }
+        </div>
+
+        <!-- About Section -->
+        <div class="mt-6">
+            <h2 class="text-xl font-semibold text-gray-700">About</h2>
+            <p class="mt-2 text-gray-600">
+                @studentProfile.Description
+            </p>
+        </div>
+
+        @* <!-- Skills Section --> *@
+        @* <div class="mt-6"> *@
+        @*     <h2 class="text-xl font-semibold text-gray-700">Skills</h2> *@
+        @*     <div class="mt-2 flex flex-wrap gap-2"> *@
+        @*         <span class="badge badge-outline">JavaScript</span> *@
+        @*         <span class="badge badge-outline">Python</span> *@
+        @*         <span class="badge badge-outline">React</span> *@
+        @*         <span class="badge badge-outline">SQL</span> *@
+        @*         <span class="badge badge-outline">Machine Learning</span> *@
+        @*     </div> *@
+        @* </div> *@
+
+        <!-- Experience Section -->
+        @* <div class="mt-6"> *@
+        @*     <h2 class="text-xl font-semibold text-gray-700">Experience</h2> *@
+        @*     <ul class="mt-2 space-y-4"> *@
+        @*         <li> *@
+        @*             <h3 class="font-semibold text-gray-800">Software Development Intern</h3> *@
+        @*             <p class="text-sm text-gray-600">XYZ Corporation, June 2023 - Aug 2023</p> *@
+        @*             <p class="text-gray-600"> *@
+        @*                 Developed a web application to optimize logistics processes using React and Node.js. *@
+        @*             </p> *@
+        @*         </li> *@
+        @*         <li> *@
+        @*             <h3 class="font-semibold text-gray-800">Teaching Assistant</h3> *@
+        @*             <p class="text-sm text-gray-600">ABC University, Jan 2023 - May 2023</p> *@
+        @*             <p class="text-gray-600"> *@
+        @*                 Assisted students in understanding core programming concepts and debugging code. *@
+        @*             </p> *@
+        @*         </li> *@
+        @*     </ul> *@
+        @* </div> *@
+
+        <!-- Education Section -->
+        @* <div class="mt-6"> *@
+        @*     <h2 class="text-xl font-semibold text-gray-700">Education</h2> *@
+        @*     <ul class="mt-2 space-y-4"> *@
+        @*         <li> *@
+        @*             <h3 class="font-semibold text-gray-800">B.Sc. Computer Science</h3> *@
+        @*             <p class="text-sm text-gray-600">ABC University, 2020 - 2024</p> *@
+        @*             <p class="text-gray-600">Expected Graduation: May 2024</p> *@
+        @*         </li> *@
+        @*     </ul> *@
+        @* </div> *@
+    }
+</div>
+
+
+@code {
+    private Models.StudentProfile? studentProfile;
+    
+    [Parameter]
+    public string UserId { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await using var context = await DbFactory.CreateDbContextAsync();
+        
+        var _studentProfile = await context.StudentProfiles.FirstOrDefaultAsync(x => x.UserId == UserId);
+        
+        if (_studentProfile == null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+        
+        studentProfile = _studentProfile;
+    }
+
+}
