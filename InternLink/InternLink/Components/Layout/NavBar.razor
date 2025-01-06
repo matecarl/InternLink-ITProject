@@ -3,17 +3,24 @@
 
 @inject NavigationManager NavigationManager
 @inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor HttpContextAccessor
 
 <nav class="navbar justify-between bg-gray-200">
     <div>
         <NavLink class="btn btn-ghost text-lg" href="">
             <img alt="Logo" src="Images/Logo.png" width="100px"/>
         </NavLink>
-
-        <NavLink href="/swipe" class="btn btn-ghost btn-sm">
-            Swipe
-        </NavLink>
-
+        <AuthorizeView Roles="Company">
+            <NavLink href="/incoming" class="btn btn-ghost btn-sm">
+                Student Swipes
+            </NavLink>
+        </AuthorizeView>
+        <AuthorizeView Roles="Student">
+            <NavLink href="/swipe" class="btn btn-ghost btn-sm">
+                Discover Internships
+            </NavLink>
+        </AuthorizeView>
         <NavLink class="btn btn-ghost btn-sm">
             Companies
         </NavLink>
@@ -36,7 +43,7 @@
                                 <NavLink href="company/">View Profile</NavLink>
                             </AuthorizeView>
                             <AuthorizeView Roles="Student" Context="StudentContext">
-                                <NavLink href="student/">View Profile</NavLink>
+                                <NavLink href="profile">View Profile</NavLink>
                             </AuthorizeView>
                         </li>
                         <li>

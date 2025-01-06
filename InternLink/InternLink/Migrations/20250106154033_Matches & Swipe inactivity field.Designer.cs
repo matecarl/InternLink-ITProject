@@ -4,6 +4,7 @@ using InternLink.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InternLink.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250106154033_Matches & Swipe inactivity field")]
+    partial class MatchesSwipeinactivityfield
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -121,7 +124,7 @@ namespace InternLink.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("CompanyProfiles", (string)null);
+                    b.ToTable("CompanyProfiles");
                 });
 
             modelBuilder.Entity("InternLink.Models.Internship", b =>
@@ -172,7 +175,7 @@ namespace InternLink.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Internships", (string)null);
+                    b.ToTable("Internships");
                 });
 
             modelBuilder.Entity("InternLink.Models.Match", b =>
@@ -203,7 +206,7 @@ namespace InternLink.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Matches", (string)null);
+                    b.ToTable("Matches");
                 });
 
             modelBuilder.Entity("InternLink.Models.StudentProfile", b =>
@@ -250,7 +253,7 @@ namespace InternLink.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("StudentProfiles", (string)null);
+                    b.ToTable("StudentProfiles");
                 });
 
             modelBuilder.Entity("InternLink.Models.Swipe", b =>
@@ -293,7 +296,7 @@ namespace InternLink.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Swipes", (string)null);
+                    b.ToTable("Swipes");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

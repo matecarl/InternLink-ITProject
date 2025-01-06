@@ -1,6 +1,8 @@
 @page "/pending"
+@attribute [Authorize(Roles = "Student")]
 @using Humanizer
 @using InternLink.Data
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<ApplicationDbContext> DbFactory
@@ -21,11 +23,11 @@
     <!-- Pending Swipe Cards Container -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto relative">
         
-        @if (PendingSwipes is not null)
+        @if (PendingSwipesList is not null)
         {
-            if (PendingSwipes.Any())
+            if (PendingSwipesList.Any())
             {
-                @foreach(var swipe in PendingSwipes)
+                @foreach(var swipe in PendingSwipesList)
                 {
                 <div class="bg-white shadow-lg rounded-lg p-4 flex items-start space-x-4 relative">
                     <!-- Time Ago -->
@@ -42,7 +44,7 @@
                         <NavLink href="@($"swipe/internship?id={@swipe.Internship.Id}")">
                             <h2 class="card-title text-lg font-semibold">@swipe.Internship.Title</h2>
                         </NavLink>
-                        <p class="text-sm text-gray-500">by @swipe.Internship.UserId</p>
+                        <p class="text-sm text-gray-500">by @swipe.Internship.CompanyProfile.CompanyName</p>
 
                         <!-- Details Row -->
                         <div class="mt-4 flex flex-wrap gap-2 text-sm text-gray-600">
@@ -96,42 +98,45 @@
 
     private int deleteId;
     
-    private List<Models.Swipe>? PendingSwipes;
-
-    private ApplicationDbContext _context;
+    private List<Models.Swipe>? PendingSwipesList;
 
     protected override async Task OnInitializedAsync()
     {
-        _context = await DbFactory.CreateDbContextAsync();
-        
-        PendingSwipes = await _context.Swipes
-            .Where(s => s.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User) &&
-                        s.Accepted == true)
+        var context = await DbFactory.CreateDbContextAsync();
+
+        PendingSwipesList = await context.Swipes
+            .Where(
+                s => s.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User) &&
+                s.IsAccepted && 
+                !s.IsInactive)
             .Include(s => s.Internship)
-            //TODO filter swipes that have been matched already
+            .ThenInclude(i => i.CompanyProfile)
             .ToListAsync();
     }
 
     private async Task ConfirmDelete(bool confirmed)
     {
+        var context = await DbFactory.CreateDbContextAsync();
+
         if (!confirmed) return;
-        
-        var _swipe = await _context.Swipes.FindAsync(deleteId);
-        
+
+        var _swipe = await context.Swipes.FindAsync(deleteId);
+
         if (_swipe == null)
         {
             NavigationManager.NavigateTo("notfound");
         }
-        
+
         if (_swipe.UserId != UserManager.GetUserId(HttpContextAccessor.HttpContext.User))
         {
             NavigationManager.NavigateTo("unauthorized");
         }
 
-        _context.Swipes.Remove(_swipe);
-        await _context.SaveChangesAsync();
-        PendingSwipes.Remove(_swipe);
-        // StateHasChanged();   
+        context.Swipes.Remove(_swipe);
+        
+        await context.SaveChangesAsync();
+        
+        PendingSwipesList.Remove(_swipe);
     }
 
     private async Task ShowSwipeDeleteConfirmation(int swipeId)

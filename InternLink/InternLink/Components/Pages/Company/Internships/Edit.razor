@@ -1,6 +1,5 @@
 ﻿@page "/internships/edit"
 @rendermode InteractiveServer
-@attribute [Authorize(Roles = "Company")]
 
 @using InternLink.Data
 @using InternLink.Enums
@@ -29,8 +28,8 @@ else
     <DataAnnotationsValidator />
     <input type="hidden" name="Internship.Id" value="@Internship.Id" />
 
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg mx-auto">
-        <h2 class="text-2xl font-bold text-center mb-6">Post an Internship Listing</h2>
+    <div class="bg-white p-8 mt-10 rounded-lg shadow-lg w-full max-w-lg mx-auto">
+        <h2 class="text-2xl font-bold text-center mb-6">Edit an Internship</h2>
 
         <!-- Title -->
         <div class="form-control mb-4">

@@ -1,5 +1,4 @@
 ﻿@page "/internships/create"
-@attribute [Authorize(Roles = "Company")]
 
 @using InternLink.Data
 @using InternLink.Enums
@@ -8,6 +7,8 @@
 @using Microsoft.AspNetCore.Identity
 @using Models
 @using Microsoft.AspNetCore.Http
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject NavigationManager NavigationManager
 @inject IInternshipRepository Repository
 @inject UserManager<ApplicationUser> UserManager
@@ -19,8 +20,8 @@
 <EditForm method="post" Model="Internship" OnValidSubmit="AddInternship" FormName="create" Enhance>
     <DataAnnotationsValidator />
     
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg mx-auto">
-        <h2 class="text-2xl font-bold text-center mb-6">Post an Internship Listing</h2>
+    <div class="bg-white p-8 mt-10 rounded-lg shadow-lg w-full max-w-lg mx-auto">
+        <h2 class="text-2xl font-bold text-center mb-6">Post an Internship</h2>
 
         <!-- Title -->
         <div class="form-control mb-4">
@@ -97,8 +98,20 @@
     [Authorize(Roles = "Company")]
     private async Task AddInternship()
     {
+        await using var context = await DbFactory.CreateDbContextAsync();
+
+        var _companyProfile = await context
+            .CompanyProfiles
+            .FirstOrDefaultAsync(c => c.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User));
+
+        if (_companyProfile == null)
+        {
+            NavigationManager.NavigateTo("Account/Manage/Profile");
+        }
+
         Internship.PostedAt = DateTime.Now;
         Internship.UserId =  UserManager.GetUserId(HttpContextAccessor.HttpContext.User);
+        Internship.CompanyId = _companyProfile.Id;
 
         await Repository.AddAsync(Internship);
         NavigationManager.NavigateTo($"internships/details?id={Internship.Id}");

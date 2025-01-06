@@ -4,6 +4,7 @@ using InternLink.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InternLink.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250105214658_Created additional relationships for easily accessing swipes & profiles from linked entity")]
+    partial class Createdadditionalrelationshipsforeasilyaccessingswipesprofilesfromlinkedentity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -121,7 +124,7 @@ namespace InternLink.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("CompanyProfiles", (string)null);
+                    b.ToTable("CompanyProfiles");
                 });
 
             modelBuilder.Entity("InternLink.Models.Internship", b =>
@@ -172,38 +175,7 @@ namespace InternLink.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Internships", (string)null);
-                });
-
-            modelBuilder.Entity("InternLink.Models.Match", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("InternshipId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("MatchedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("StudentProfileId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("InternshipId");
-
-                    b.HasIndex("StudentProfileId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Matches", (string)null);
+                    b.ToTable("Internships");
                 });
 
             modelBuilder.Entity("InternLink.Models.StudentProfile", b =>
@@ -250,7 +222,7 @@ namespace InternLink.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("StudentProfiles", (string)null);
+                    b.ToTable("StudentProfiles");
                 });
 
             modelBuilder.Entity("InternLink.Models.Swipe", b =>
@@ -261,17 +233,14 @@ namespace InternLink.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("Accepted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("ApplicationUserId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("InternshipId")
                         .HasColumnType("int");
-
-                    b.Property<bool>("IsAccepted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsInactive")
-                        .HasColumnType("bit");
 
                     b.Property<int>("StudentProfileId")
                         .HasColumnType("int");
@@ -293,7 +262,7 @@ namespace InternLink.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Swipes", (string)null);
+                    b.ToTable("Swipes");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -455,29 +424,6 @@ namespace InternLink.Migrations
                         .IsRequired();
 
                     b.Navigation("CompanyProfile");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("InternLink.Models.Match", b =>
-                {
-                    b.HasOne("InternLink.Models.Internship", "Internship")
-                        .WithMany()
-                        .HasForeignKey("InternshipId");
-
-                    b.HasOne("InternLink.Models.StudentProfile", "StudentProfile")
-                        .WithMany()
-                        .HasForeignKey("StudentProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("InternLink.Data.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("Internship");
-
-                    b.Navigation("StudentProfile");
 
                     b.Navigation("User");
                 });

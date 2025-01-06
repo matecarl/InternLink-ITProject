@@ -9,6 +9,7 @@
 @inject IDbContextFactory<ApplicationDbContext> DbFactory
 @inject UserManager<ApplicationUser> UserManager
 @inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
 
@@ -23,7 +24,7 @@
         <div class="flex items-center justify-between mb-4">
             <div>
                 <h2 class="text-xl font-bold text-gray-800">@internship.Title</h2>
-                <p class="text-gray-600">@internship.User?.UserName</p>
+                <p class="text-gray-600">By @internship.CompanyProfile.CompanyName</p>
             </div>
             <div>
                 <p class="text-sm text-gray-500">@internship.PostedAt.ToString("dd MMM yyyy")</p>
@@ -115,12 +116,29 @@
     {
         await using var context = await DbFactory.CreateDbContextAsync();
 
+        var StudentProfile = await context.StudentProfiles
+            .FirstOrDefaultAsync(s => s.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User));
+
+        // Navigate to profile creation, if user doesn't have a profile
+        if (StudentProfile == null) 
+        {
+            NavigationManager.NavigateTo("Account/Manage/Profile");
+        }
+
+        // Make sure the user hasn't already swiped on this internship
+        if (context.Swipes.Any(s => s.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User) && s.InternshipId == internship.Id))
+        {
+            return;
+        }
+            
         Models.Swipe swipe = new Models.Swipe
         {
-            Accepted = accepted,
+            IsAccepted = accepted,
             InternshipId = internship.Id,
             UserId = UserManager.GetUserId(HttpContextAccessor.HttpContext.User),
-            SwipedAt = DateTime.Now
+            StudentProfileId = StudentProfile.Id,
+            SwipedAt = DateTime.Now,
+            IsInactive = !accepted
         };
 
         await context.Swipes.AddAsync(swipe);
@@ -130,16 +148,17 @@
     private async Task LoadInternship()
     {
         await using var context = await DbFactory.CreateDbContextAsync();
-
+        
+        // Find the first internship that the user hasn't swiped on
         internship = await context.Internships
-            .Where(i => !context.Swipes // Check if the user has already swiped on this internship
+            .Where(i => !context.Swipes
                 .Any(
                     s => s.UserId == UserManager.GetUserId(HttpContextAccessor.HttpContext.User) && 
-                         s.InternshipId == i.Id
+                    s.InternshipId == i.Id
                 )
             )
-            .FirstOrDefaultAsync();
-            
+            .Include(i => i.CompanyProfile)
+            .FirstOrDefaultAsync(); 
     }
 
 }
