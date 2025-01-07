@@ -93,6 +93,7 @@ else
             DbContext.CompanyProfiles.Update(companyProfile);
         }
         await DbContext.SaveChangesAsync();
+        NavigationManager.NavigateTo("/company?id=" + companyProfile.UserId);
     }
 
     // private void HandleFileSelected(InputFileChangeEventArgs e)
