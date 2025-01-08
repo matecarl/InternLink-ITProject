@@ -1,0 +1,122 @@
+@rendermode InteractiveServer
+
+@page "/company"
+@using System.Security.Claims
+@using InternLink.Data
+@using InternLink.Models
+@using InternLink.Services.Profiles
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject NavigationManager NavigationManager
+@inject IProfileService ProfileService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject InternLink.Data.ApplicationDbContext DbContext
+@inject UserManager<ApplicationUser> UserManager
+@inject IHttpContextAccessor HttpContextAccessor
+
+@attribute [Authorize]
+
+<div class="p-6 bg-white min-h-screen">
+        @if (companies == null)
+        {
+            <p class="text-center text-gray-500"><em>This page is empty</em></p>
+        }
+        else {
+        <!-- Company Title -->
+        <div class="p-6 space-y-6">
+            <h3 class="text-4xl font-bold py-10 px-6 text-center">
+                @companies.CompanyName
+            </h3>
+        </div>
+        <hr>
+        <!-- Company Details -->
+        <div class="p-6 space-y-6 m-9 text-gray-800 text-center">
+            <!-- Description -->
+            <div class="py-10">
+                <h3 class="text-2xl font-bold py-4 px-6 text-center">
+                    About Company
+                </h3>
+                <p>
+                    @companies.Description
+                </p>    
+            </div>
+            <hr>
+            <div class="p-3 space-y-6 text-gray-800 text-center">
+                <h3 class="text-2xl font-bold py-4 px-6 text-center">Company Information</h3>
+                <p>Get to know us beter</p>
+            </div>
+            <!-- Horizontal Details Section -->
+            <div class="px-4 flex justify-between text-gray-700 space-x-6">
+                <!-- Location -->
+                <div class="flex flex-col items-center">
+                    <i class="fa-solid fa-location-dot text-red-500 text-xl"></i>
+                    <p>
+                        <strong>Location</strong>
+                    </p>
+                    <p>
+                        @companies.Location
+                    </p>
+                </div>
+
+                <!-- Industry -->
+                <div class="flex flex-col items-center">
+                    <i class="fa-solid fa-briefcase text-orange-900 text-xl"></i>
+                    <p>
+                        <strong>Industry</strong>
+                    </p>
+                    <p>
+                        @companies.Industry
+                    </p>
+                </div>
+
+                <!-- Website URL -->
+                <div class="flex flex-col items-center">
+                    <i class="fa-solid fa-globe text-blue-500 text-xl"></i>
+                    <p>
+                        <strong>Website</strong>
+                    </p>
+                    <a href="company.WebsiteUrl" target="_blank" class="text-blue-500 underline">
+                        @companies.WebsiteUrl
+                    </a>
+                </div>
+            </div>
+            <!-- Close Button -->
+            <div class="p-6">
+                <button @onclick="NavigateToEditPage" class="btn bg-blue-600 text-white w-full">Edit profile</button>
+            </div>
+        </div>
+        }
+</div>
+
+@code {
+    private Models.CompanyProfile? companies;
+    
+    [SupplyParameterFromQuery]
+    private string? Id { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+            
+            var _companyProfile = await DbContext.CompanyProfiles.FirstOrDefaultAsync(c => c.UserId == Id);
+            
+            if (_companyProfile == null)
+            {
+                if (Id == UserManager.GetUserId(HttpContextAccessor.HttpContext.User))
+                {
+                    NavigationManager.NavigateTo("Account/Manage/Profile");
+                }
+                else
+                {
+                    NavigationManager.NavigateTo("notfound");
+                }
+            }
+
+            companies = _companyProfile;
+    }
+    
+    private void NavigateToEditPage()
+    {
+        NavigationManager.NavigateTo("Account/Manage/Profile");
+    }
+}
